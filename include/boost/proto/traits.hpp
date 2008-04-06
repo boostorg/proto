@@ -41,9 +41,9 @@
     #include <boost/type_traits/remove_const.hpp>
     #include <boost/type_traits/add_reference.hpp>
     #include <boost/proto/proto_fwd.hpp>
-    #include <boost/proto/ref.hpp>
     #include <boost/proto/args.hpp>
     #include <boost/proto/tags.hpp>
+    #include <boost/proto/detail/child_traits.hpp>
     #include <boost/proto/transform/pass_through.hpp>
     #include <boost/proto/detail/suffix.hpp>
 
@@ -420,13 +420,9 @@
             /// of a terminal Proto expression.
             ///
             template<typename Expr>
-            struct value : child_c<Expr, 0>
-            {
-                //typedef typename Expr::proto_child0 wrapped_type;
-                //typedef typename unref<wrapped_type>::type type;
-                //typedef typename unref<wrapped_type>::reference reference;
-                //typedef typename unref<wrapped_type>::const_reference const_reference;
-            };
+            struct value
+              : child_c<Expr, 0>
+            {};
 
             // TODO left<> and right<> force the instantiation of Expr.
             // Couldn't we partially specialize them on proto::expr< T, A >
@@ -438,13 +434,9 @@
             /// <tt>result_of::left\<Expr\></tt> is equivalent to
             /// <tt>result_of::child_c\<Expr, 0\></tt>.
             template<typename Expr>
-            struct left : child_c<Expr, 0>
-            {
-                //typedef typename Expr::proto_child0 wrapped_type;
-                //typedef typename unref<wrapped_type>::type type;
-                //typedef typename unref<wrapped_type>::reference reference;
-                //typedef typename unref<wrapped_type>::const_reference const_reference;
-            };
+            struct left
+              : child_c<Expr, 0>
+            {};
 
             /// \brief A metafunction that returns the type of the right child
             /// of a binary Proto expression.
@@ -453,12 +445,7 @@
             /// <tt>result_of::child_c\<Expr, 1\></tt>.
             template<typename Expr>
             struct right : child_c<Expr, 1>
-            {
-                //typedef typename Expr::proto_child1 wrapped_type;
-                //typedef typename unref<wrapped_type>::type type;
-                //typedef typename unref<wrapped_type>::reference reference;
-                //typedef typename unref<wrapped_type>::const_reference const_reference;
-            };
+            {};
 
         } // namespace result_of
 
@@ -1966,7 +1953,7 @@
         /// \overload
         ///
         template<typename Expr2>
-        typename result_of::unref<typename Expr2::proto_base_expr::proto_child0>::reference
+        typename detail::child_traits<typename Expr2::proto_base_expr::proto_child0>::reference
         child(Expr2 &expr2 BOOST_PROTO_DISABLE_IF_IS_CONST(Expr2))
         {
             return expr2.proto_base().child0;
@@ -1975,7 +1962,7 @@
         /// \overload
         ///
         template<typename Expr2>
-        typename result_of::unref<typename Expr2::proto_base_expr::proto_child0>::const_reference
+        typename detail::child_traits<typename Expr2::proto_base_expr::proto_child0>::const_reference
         child(Expr2 const &expr2)
         {
             return expr2.proto_base().child0;
@@ -2244,17 +2231,42 @@
             template<typename Expr>
             struct child_c<Expr, N>
             {
-                typedef typename Expr::BOOST_PP_CAT(proto_child, N) wrapped_type;
-                typedef typename unref<wrapped_type>::type type;
+                /// The raw type of the Nth child as it is stored within
+                /// \c Expr. This may be a value or a reference
+                typedef typename Expr::BOOST_PP_CAT(proto_child, N) value_type;
+
+                /// The "value" type of the child, suitable for return by value,
+                /// computed as follows:
+                /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
+                /// \li <tt>T[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
+                /// \li <tt>T const &</tt> becomes <tt>T</tt>
+                /// \li <tt>T &</tt> becomes <tt>T</tt>
+                /// \li <tt>T</tt> becomes <tt>T</tt>
+                typedef typename detail::child_traits<value_type>::value_type type;
             };
             
             template<typename Expr>
             struct child_c<Expr &, N>
             {
-                typedef typename Expr::BOOST_PP_CAT(proto_child, N) wrapped_type;
-                typedef typename unref<wrapped_type>::reference type;
+                /// The raw type of the Nth child as it is stored within
+                /// \c Expr. This may be a value or a reference
+                typedef typename Expr::BOOST_PP_CAT(proto_child, N) value_type;
+
+                /// The "reference" type of the child, suitable for return by
+                /// reference, computed as follows:
+                /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
+                /// \li <tt>T[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
+                /// \li <tt>T const &</tt> becomes <tt>T const &</tt>
+                /// \li <tt>T &</tt> becomes <tt>T &</tt>
+                /// \li <tt>T</tt> becomes <tt>T &</tt>
+                typedef typename detail::child_traits<value_type>::reference type;
                 
                 /// INTERNAL ONLY
+                ///
                 static type call(Expr &expr)
                 {
                     return expr.proto_base().BOOST_PP_CAT(child, N);
@@ -2264,75 +2276,28 @@
             template<typename Expr>
             struct child_c<Expr const &, N>
             {
-                typedef typename Expr::BOOST_PP_CAT(proto_child, N) wrapped_type;
-                typedef typename unref<wrapped_type>::const_reference type;
+                /// The raw type of the Nth child as it is stored within
+                /// \c Expr. This may be a value or a reference
+                typedef typename Expr::BOOST_PP_CAT(proto_child, N) value_type;
+                
+                /// The "const reference" type of the child, suitable for return by
+                /// const reference, computed as follows:
+                /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
+                /// \li <tt>T[N]</tt> becomes <tt>T const(&)[N]</tt>
+                /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
+                /// \li <tt>T const &</tt> becomes <tt>T const &</tt>
+                /// \li <tt>T &</tt> becomes <tt>T &</tt>
+                /// \li <tt>T</tt> becomes <tt>T const &</tt>
+                typedef typename detail::child_traits<value_type>::const_reference type;
 
                 /// INTERNAL ONLY
+                ///
                 static type call(Expr const &expr)
                 {
                     return expr.proto_base().BOOST_PP_CAT(child, N);
                 }
             };
-            
-            
-            //    /// The raw type of the Nth child as it is stored within
-            //    /// \c Expr. This may be a value, a reference, or a Proto
-            //    /// <tt>ref_\<\></tt> wrapper.
-            //    typedef typename Expr::BOOST_PP_CAT(proto_child, N) wrapped_type;
-
-            //    /// The "value" type of the child, suitable for return by value,
-            //    /// computed as follows:
-            //    /// \li <tt>ref_\<T const\></tt> becomes <tt>T</tt>
-            //    /// \li <tt>ref_\<T\></tt> becomes <tt>T</tt>
-            //    /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
-            //    /// \li <tt>T[N]</tt> becomes <tt>T(&)[N]</tt>
-            //    /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
-            //    /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
-            //    /// \li <tt>T const &</tt> becomes <tt>T</tt>
-            //    /// \li <tt>T &</tt> becomes <tt>T</tt>
-            //    /// \li <tt>T</tt> becomes <tt>T</tt>
-            //    typedef typename unref<wrapped_type>::type type;
-
-            //    /// The "reference" type of the child, suitable for return by
-            //    /// reference, computed as follows:
-            //    /// \li <tt>ref_\<T const\></tt> becomes <tt>T const &</tt>
-            //    /// \li <tt>ref_\<T\></tt> becomes <tt>T &</tt>
-            //    /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
-            //    /// \li <tt>T[N]</tt> becomes <tt>T(&)[N]</tt>
-            //    /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
-            //    /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
-            //    /// \li <tt>T const &</tt> becomes <tt>T const &</tt>
-            //    /// \li <tt>T &</tt> becomes <tt>T &</tt>
-            //    /// \li <tt>T</tt> becomes <tt>T &</tt>
-            //    typedef typename unref<wrapped_type>::reference reference;
-
-            //    /// The "const reference" type of the child, suitable for return by
-            //    /// const reference, computed as follows:
-            //    /// \li <tt>ref_\<T const\></tt> becomes <tt>T const &</tt>
-            //    /// \li <tt>ref_\<T\></tt> becomes <tt>T &</tt>
-            //    /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
-            //    /// \li <tt>T[N]</tt> becomes <tt>T const(&)[N]</tt>
-            //    /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
-            //    /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
-            //    /// \li <tt>T const &</tt> becomes <tt>T const &</tt>
-            //    /// \li <tt>T &</tt> becomes <tt>T &</tt>
-            //    /// \li <tt>T</tt> becomes <tt>T const &</tt>
-            //    typedef typename unref<wrapped_type>::const_reference const_reference;
-
-            //    /// INTERNAL ONLY
-            //    ///
-            //    static reference call(typename Expr::proto_derived_expr &expr)
-            //    {
-            //        return proto::unref(expr.proto_base().BOOST_PP_CAT(child, N));
-            //    }
-
-            //    /// INTERNAL ONLY
-            //    ///
-            //    static const_reference call(typename Expr::proto_derived_expr const &expr)
-            //    {
-            //        return proto::unref(expr.proto_base().BOOST_PP_CAT(child, N));
-            //    }
-            //};
         }
 
     #undef N

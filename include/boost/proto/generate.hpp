@@ -55,9 +55,9 @@
             struct by_value_generator_;
 
         #define BOOST_PROTO_DEFINE_BY_VALUE_TYPE(Z, N, Expr)                                        \
-            typename result_of::unref<                                                              \
+            typename detail::child_traits<                                                          \
                 typename expr_traits<Expr>::args::BOOST_PP_CAT(child, N)                            \
-            >::type                                                                                 \
+            >::value_type                                                                           \
             /**/
 
         #define BOOST_PROTO_DEFINE_BY_VALUE(Z, N, expr)                                             \
@@ -263,7 +263,7 @@
                 typedef proto::expr<
                     typename expr_traits<Expr>::tag
                   , BOOST_PP_CAT(list, N)<
-                        // typename result_of::unref<typename expr_traits<Expr>::args::child0>::type, ...
+                        // typename detail::child_traits<typename expr_traits<Expr>::args::child0>::value_type, ...
                         BOOST_PP_ENUM(N, BOOST_PROTO_DEFINE_BY_VALUE_TYPE, Expr)
                     >
                 > type;

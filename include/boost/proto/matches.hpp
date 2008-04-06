@@ -34,6 +34,7 @@
     #if BOOST_WORKAROUND(BOOST_MSVC, == 1310)
     #include <boost/type_traits/is_array.hpp>
     #endif
+    #include <boost/type_traits/is_const.hpp>
     #include <boost/type_traits/is_convertible.hpp>
     #include <boost/type_traits/is_reference.hpp>
     #include <boost/type_traits/is_pointer.hpp>

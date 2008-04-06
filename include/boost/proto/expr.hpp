@@ -24,9 +24,9 @@
     #include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
     #include <boost/utility/addressof.hpp>
     #include <boost/proto/proto_fwd.hpp>
-    #include <boost/proto/ref.hpp>
     #include <boost/proto/args.hpp>
     #include <boost/proto/traits.hpp>
+    #include <boost/proto/detail/child_traits.hpp>
     #include <boost/proto/detail/suffix.hpp>
 
     #if defined(_MSC_VER) && (_MSC_VER >= 1020)
@@ -59,7 +59,7 @@
         /// INTERNAL ONLY
         ///
         #define BOOST_PROTO_UNREF_CHILD_TYPE(Z, N, DATA)                                            \
-            typename result_of::unref<typename Args::BOOST_PP_CAT(child, N)>::const_reference       \
+            typename detail::child_traits<typename Args::BOOST_PP_CAT(child, N)>::const_reference   \
             /**/
 
         /// INTERNAL ONLY

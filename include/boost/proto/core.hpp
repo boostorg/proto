@@ -12,7 +12,6 @@
 
 #include <boost/proto/detail/prefix.hpp>
 #include <boost/proto/proto_fwd.hpp>
-#include <boost/proto/ref.hpp>
 #include <boost/proto/args.hpp>
 #include <boost/proto/tags.hpp>
 #include <boost/proto/eval.hpp>

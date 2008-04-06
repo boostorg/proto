@@ -345,7 +345,7 @@ namespace boost { namespace fusion
                     typename proto::result_of::child_c<
                         typename Iterator::expr_type
                       , Iterator::index
-                    >::wrapped_type
+                    >::value_type
                 type;
             };
         };
@@ -523,7 +523,7 @@ namespace boost { namespace fusion
                     typename proto::result_of::child_c<
                         Sequence
                       , Index::value
-                    >::wrapped_type
+                    >::value_type
                 type;
             };
         };
