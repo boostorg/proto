@@ -1511,10 +1511,6 @@
         typedef BOOST_PP_CAT(DATA, N) BOOST_PP_CAT(proto_child, N);                                 \
         /**/
 
-    #define BOOST_PROTO_IMPLICIT_ARG(Z, N, DATA)                                                    \
-        BOOST_PP_CAT(DATA, N) &BOOST_PP_CAT(a, N);                                                  \
-        /**/
-
     #define BOOST_PP_ITERATION_PARAMS_1 (3, (0, BOOST_PROTO_MAX_ARITY, <boost/proto/traits.hpp>))
     #include BOOST_PP_ITERATE()
 
@@ -2186,19 +2182,6 @@
 
         namespace detail
         {
-            template<BOOST_PP_ENUM_PARAMS(N, typename A)>
-            struct BOOST_PP_CAT(implicit_expr_, N)
-            {
-                BOOST_PP_REPEAT(N, BOOST_PROTO_IMPLICIT_ARG, A)
-
-                template<typename Tag, typename Args, long Arity>
-                operator proto::expr<Tag, Args, Arity> () const
-                {
-                    proto::expr<Tag, Args, Arity> that = {BOOST_PP_ENUM_PARAMS(N, a)};
-                    return that;
-                }
-            };
-
             template<
                 template<BOOST_PP_ENUM_PARAMS(N, typename BOOST_PP_INTERCEPT)> class T
               , BOOST_PP_ENUM_PARAMS(N, typename A)
@@ -2208,15 +2191,15 @@
             {};
         }
 
-        /// INTERNAL ONLY
-        template<BOOST_PP_ENUM_PARAMS(N, typename A)>
-        detail::BOOST_PP_CAT(implicit_expr_, N)<BOOST_PP_ENUM_PARAMS(N, A)>
-        implicit_expr(BOOST_PP_ENUM_BINARY_PARAMS(N, A, &a))
-        {
-            detail::BOOST_PP_CAT(implicit_expr_, N)<BOOST_PP_ENUM_PARAMS(N, A)> that
-                = {BOOST_PP_ENUM_PARAMS(N, a)};
-            return that;
-        }
+        ///// INTERNAL ONLY
+        //template<BOOST_PP_ENUM_PARAMS(N, typename A)>
+        //detail::BOOST_PP_CAT(implicit_expr_, N)<BOOST_PP_ENUM_PARAMS(N, A)>
+        //implicit_expr(BOOST_PP_ENUM_BINARY_PARAMS(N, A, &a))
+        //{
+        //    detail::BOOST_PP_CAT(implicit_expr_, N)<BOOST_PP_ENUM_PARAMS(N, A)> that
+        //        = {BOOST_PP_ENUM_PARAMS(N, a)};
+        //    return that;
+        //}
 
     #endif
 

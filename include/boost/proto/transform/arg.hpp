@@ -116,7 +116,7 @@ namespace boost { namespace proto
 
     /// \brief A unary CallableTransform that wraps its argument
     /// in a \c boost::reference_wrapper\<\>.
-    struct _ref : callable
+    struct _byref : callable
     {
         template<typename Sig>
         struct result;
@@ -151,6 +151,47 @@ namespace boost { namespace proto
         }
     };
 
+    /// \brief A unary CallableTransform that strips references
+    /// from its argument.
+    struct _byval : callable
+    {
+        template<typename Sig>
+        struct result;
+
+        template<typename This, typename T>
+        struct result<This(T)>
+        {
+            typedef T type;
+        };
+
+        template<typename This, typename T>
+        struct result<This(T &)>
+          : result<This(T)>
+        {};
+
+        template<typename This, typename T>
+        struct result<This(boost::reference_wrapper<T>)>
+          : result<This(T)>
+        {};
+
+        /// \param t The object to unref
+        /// \return <tt>t</tt>
+        /// \throw nothrow
+        template<typename T>
+        T const &operator ()(T const &t) const
+        {
+            return t;
+        }
+
+        /// \overload
+        ///
+        template<typename T>
+        T &operator ()(boost::reference_wrapper<T> const &t) const
+        {
+            return t;
+        }
+    };
+
     /// INTERNAL ONLY
     ///
     template<>
@@ -182,7 +223,14 @@ namespace boost { namespace proto
     /// INTERNAL ONLY
     ///
     template<>
-    struct is_callable<_ref>
+    struct is_callable<_byref>
+      : mpl::true_
+    {};
+
+    /// INTERNAL ONLY
+    ///
+    template<>
+    struct is_callable<_byval>
       : mpl::true_
     {};
 

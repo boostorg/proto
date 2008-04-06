@@ -940,6 +940,36 @@
           : mpl::true_
         {};
 
+        template<typename Tag, typename Domain BOOST_PROTO_WHEN_BUILDING_DOCS(= deduce_domain)>
+        struct _make_expr : callable
+        {
+            template<typename Sig>
+            struct result
+              : functor::make_expr<Tag, Domain>::template result<Sig>
+            {};
+            
+            #define M0(Z, N, DATA)                                                                  \
+            template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                      \
+            BOOST_PP_CAT(detail::implicit_expr_, N)<BOOST_PP_ENUM_PARAMS_Z(Z, N, A)>                \
+            operator ()(BOOST_PP_ENUM_BINARY_PARAMS_Z(Z, N, A, &a)) const                           \
+            {                                                                                       \
+                BOOST_PP_CAT(detail::implicit_expr_, N)<BOOST_PP_ENUM_PARAMS_Z(Z, N, A)> that = {   \
+                    BOOST_PP_ENUM_PARAMS_Z(Z, N, a)                                                 \
+                };                                                                                  \
+                return that;                                                                        \
+            }                                                                                       \
+            /**/
+            BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_INC(BOOST_PROTO_MAX_ARITY), M0, ~)
+            #undef M0
+        };
+
+        /// INTERNAL ONLY
+        ///
+        template<typename Tag, typename Domain>
+        struct is_callable<_make_expr<Tag, Domain> >
+          : mpl::true_
+        {};
+
     }}
 
     #undef BOOST_PROTO_AT
@@ -953,6 +983,21 @@
 
     #define N BOOST_PP_ITERATION()
     #define M BOOST_PP_SUB(BOOST_PROTO_MAX_ARITY, N)
+
+        template<BOOST_PP_ENUM_PARAMS(N, typename A)>
+        struct BOOST_PP_CAT(implicit_expr_, N)
+        {
+            #define M0(Z, N, DATA) BOOST_PP_CAT(A, N) &BOOST_PP_CAT(a, N);
+            BOOST_PP_REPEAT(N, M0, ~)
+            #undef M0
+
+            template<typename Expr>
+            operator Expr() const
+            {
+                typename Expr::proto_base_expr that = {BOOST_PP_ENUM_PARAMS(N, a)};
+                return typename Expr::proto_domain()(that);
+            }
+        };
 
         template<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_ARITY, typename T)>
         struct select_nth<BOOST_PP_DEC(N), BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_ARITY, T)>

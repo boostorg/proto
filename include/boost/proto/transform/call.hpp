@@ -28,8 +28,6 @@
     #include <boost/proto/detail/as_lvalue.hpp>
     #include <boost/proto/detail/suffix.hpp>
 
-    #define UNCVREF BOOST_PROTO_UNCVREF
-
     namespace boost { namespace proto
     {
         /// \brief Wrap \c PrimitiveTransform so that <tt>when\<\></tt> knows
@@ -144,7 +142,7 @@
               : transform_impl<Expr, State, Data>
             {
                 typedef typename when<_, A0>::template impl<Expr, State, Data>::result_type a0;
-                typedef typename boost::result_of<Fun(UNCVREF(a0))>::type result_type;
+                typedef typename boost::result_of<Fun(a0)>::type result_type;
                 result_type operator ()(
                     typename impl2::expr_param   expr
                   , typename impl2::state_param  state
@@ -152,8 +150,7 @@
                 ) const
                 {
                     return Fun()(
-                        typename when<_, A0>
-                            ::template impl<Expr, State, Data>()(expr, state, data)
+                        detail::as_lvalue<a0>(typename when<_, A0>::template impl<Expr, State, Data>()(expr, state, data), 0)
                     );
                 }
             };
@@ -215,7 +212,7 @@
             {
                 typedef typename when<_, A0>::template impl<Expr, State, Data>::result_type a0;
                 typedef typename when<_, A1>::template impl<Expr, State, Data>::result_type a1;
-                typedef typename boost::result_of<Fun(UNCVREF(a0), UNCVREF(a1))>::type result_type;
+                typedef typename boost::result_of<Fun(a0, a1)>::type result_type;
                 result_type operator ()(
                     typename impl2::expr_param   expr
                   , typename impl2::state_param  state
@@ -223,8 +220,8 @@
                 ) const
                 {
                     return Fun()(
-                        typename when<_, A0>::template impl<Expr, State, Data>()(expr, state, data)
-                      , typename when<_, A1>::template impl<Expr, State, Data>()(expr, state, data)
+                        detail::as_lvalue<a0>(typename when<_, A0>::template impl<Expr, State, Data>()(expr, state, data), 0)
+                      , detail::as_lvalue<a1>(typename when<_, A1>::template impl<Expr, State, Data>()(expr, state, data), 0)
                     );
                 }
             };
@@ -295,7 +292,7 @@
                 typedef typename when<_, A0>::template impl<Expr, State, Data>::result_type a0;
                 typedef typename when<_, A1>::template impl<Expr, State, Data>::result_type a1;
                 typedef typename when<_, A2>::template impl<Expr, State, Data>::result_type a2;
-                typedef typename boost::result_of<Fun(UNCVREF(a0), UNCVREF(a1), UNCVREF(a2))>::type result_type;
+                typedef typename boost::result_of<Fun(a0, a1, a2)>::type result_type;
                 result_type operator ()(
                     typename impl2::expr_param   expr
                   , typename impl2::state_param  state
@@ -303,9 +300,9 @@
                 ) const
                 {
                     return Fun()(
-                        typename when<_, A0>::template impl<Expr, State, Data>()(expr, state, data)
-                      , typename when<_, A1>::template impl<Expr, State, Data>()(expr, state, data)
-                      , typename when<_, A2>::template impl<Expr, State, Data>()(expr, state, data)
+                        detail::as_lvalue<a0>(typename when<_, A0>::template impl<Expr, State, Data>()(expr, state, data), 0)
+                      , detail::as_lvalue<a1>(typename when<_, A1>::template impl<Expr, State, Data>()(expr, state, data), 0)
+                      , detail::as_lvalue<a2>(typename when<_, A2>::template impl<Expr, State, Data>()(expr, state, data), 0)
                     );
                 }
             };
@@ -361,8 +358,6 @@
 
     }} // namespace boost::proto
 
-    #undef UNCVREF
-
     #endif
 
 #else
@@ -389,9 +384,7 @@
                 #undef M0
 
                 typedef
-                    typename boost::result_of<
-                        Fun(BOOST_PP_ENUM_BINARY_PARAMS(N, typename detail::uncvref<a, >::type BOOST_PP_INTERCEPT))
-                    >::type
+                    typename boost::result_of<Fun(BOOST_PP_ENUM_PARAMS(N, a))>::type
                 result_type;
 
                 /// Let \c ax be <tt>when\<_, Ax\>()(expr, state, data)</tt>
@@ -408,8 +401,9 @@
                 ) const
                 {
                     #define M0(Z, M, DATA)                                                          \
-                        typename when<_, BOOST_PP_CAT(A, M)>                                        \
-                            ::template impl<Expr, State, Data>()(expr, state, data)                 \
+                        detail::as_lvalue<BOOST_PP_CAT(a, M)>(                                      \
+                            typename when<_, BOOST_PP_CAT(A, M)>                                    \
+                                ::template impl<Expr, State, Data>()(expr, state, data), 0)         \
                     return Fun()(BOOST_PP_ENUM(N, M0, ~));
                     #undef M0
                 }

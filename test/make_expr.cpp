@@ -150,14 +150,15 @@ void test_unpack_expr_functional()
 }
 
 #if BOOST_WORKAROUND(BOOST_MSVC, == 1310)
-#define _ref(x) call<_ref(x)>
+#define _byref(x) call<_byref(x)>
+#define _byval(x) call<_byval(x)>
 #define Minus(x) call<Minus(x)>
 #endif
 
 // Turn all terminals held by reference into ones held by value
 struct ByVal
   : or_<
-        when<terminal<_>, _make_terminal(_value)>
+        when<terminal<_>, _make_terminal(_byval(_value))>
       , when<nary_expr<_, vararg<ByVal> > >
     >
 {};
@@ -165,7 +166,7 @@ struct ByVal
 // Turn all terminals held by value into ones held by reference (not safe in general)
 struct ByRef
   : or_<
-        when<terminal<_>, _make_terminal(_ref(_value))>
+        when<terminal<_>, _make_terminal(_byref(_value))>
       , when<nary_expr<_, vararg<ByRef> > >
     >
 {};
@@ -182,13 +183,14 @@ struct Square
   : or_<
         // Not creating new terminal nodes here,
         // so hold the existing terminals by reference:
-        when<terminal<_>, _make_multiplies(_ref(_), _ref(_))>
+        when<terminal<_>, _make_multiplies(_, _)>
       , when<plus<Square, Square> >
     >
 {};
 
 #if BOOST_WORKAROUND(BOOST_MSVC, == 1310)
-#undef _ref
+#undef _byref
+#undef _byval
 #undef Minus
 #endif
 
@@ -205,8 +207,8 @@ void test_make_expr_transform()
     >::type t2 = ByRef()(as_expr(1) + 1);
 
     minus<
-        terminal<int>::type
-      , terminal<int const &>::type
+        terminal<int>::type const &
+      , terminal<int const &>::type const &
     >::type t3 = Minus()(as_expr(1) + 1);
 
     plus<

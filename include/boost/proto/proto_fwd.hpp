@@ -581,7 +581,7 @@ namespace boost { namespace proto
         struct unfused_expr;
 
         typedef make_expr<tag::terminal>            make_terminal;
-        typedef make_expr<tag::unary_plus>               make_posit;
+        typedef make_expr<tag::unary_plus>          make_unary_plus;
         typedef make_expr<tag::negate>              make_negate;
         typedef make_expr<tag::dereference>         make_dereference;
         typedef make_expr<tag::complement>          make_complement;
@@ -631,57 +631,60 @@ namespace boost { namespace proto
         struct reverse;
     }
 
-    typedef functor::make_terminal               _make_terminal;
-    typedef functor::make_posit                  _make_posit;
-    typedef functor::make_negate                 _make_negate;
-    typedef functor::make_dereference            _make_dereference;
-    typedef functor::make_complement             _make_complement;
-    typedef functor::make_address_of             _make_address_of;
-    typedef functor::make_logical_not            _make_logical_not;
-    typedef functor::make_pre_inc                _make_pre_inc;
-    typedef functor::make_pre_dec                _make_pre_dec;
-    typedef functor::make_post_inc               _make_post_inc;
-    typedef functor::make_post_dec               _make_post_dec;
-    typedef functor::make_shift_left             _make_shift_left;
-    typedef functor::make_shift_right            _make_shift_right;
-    typedef functor::make_multiplies             _make_multiplies;
-    typedef functor::make_divides                _make_divides;
-    typedef functor::make_modulus                _make_modulus;
-    typedef functor::make_plus                   _make_plus;
-    typedef functor::make_minus                  _make_minus;
-    typedef functor::make_less                   _make_less;
-    typedef functor::make_greater                _make_greater;
-    typedef functor::make_less_equal             _make_less_equal;
-    typedef functor::make_greater_equal          _make_greater_equal;
-    typedef functor::make_equal_to               _make_equal_to;
-    typedef functor::make_not_equal_to           _make_not_equal_to;
-    typedef functor::make_logical_or             _make_logical_or;
-    typedef functor::make_logical_and            _make_logical_and;
-    typedef functor::make_bitwise_and            _make_bitwise_and;
-    typedef functor::make_bitwise_or             _make_bitwise_or;
-    typedef functor::make_bitwise_xor            _make_bitwise_xor;
-    typedef functor::make_comma                  _make_comma;
-    typedef functor::make_mem_ptr                _make_mem_ptr;
-    typedef functor::make_assign                 _make_assign;
-    typedef functor::make_shift_left_assign      _make_shift_left_assign;
-    typedef functor::make_shift_right_assign     _make_shift_right_assign;
-    typedef functor::make_multiplies_assign      _make_multiplies_assign;
-    typedef functor::make_divides_assign         _make_divides_assign;
-    typedef functor::make_modulus_assign         _make_modulus_assign;
-    typedef functor::make_plus_assign            _make_plus_assign;
-    typedef functor::make_minus_assign           _make_minus_assign;
-    typedef functor::make_bitwise_and_assign     _make_bitwise_and_assign;
-    typedef functor::make_bitwise_or_assign      _make_bitwise_or_assign;
-    typedef functor::make_bitwise_xor_assign     _make_bitwise_xor_assign;
-    typedef functor::make_subscript              _make_subscript;
-    typedef functor::make_if_else                _make_if_else;
-    typedef functor::make_function               _make_function;
-
     typedef functor::flatten     _flatten;
     typedef functor::pop_front   _pop_front;
     typedef functor::reverse     _reverse;
     typedef functor::eval        _eval;
     typedef functor::deep_copy   _deep_copy;
+
+    template<typename Tag, typename Domain = deduce_domain>
+    struct _make_expr;
+
+    typedef _make_expr<tag::terminal>           _make_terminal;
+    typedef _make_expr<tag::unary_plus>         _make_unary_plus;
+    typedef _make_expr<tag::negate>             _make_negate;
+    typedef _make_expr<tag::dereference>        _make_dereference;
+    typedef _make_expr<tag::complement>         _make_complement;
+    typedef _make_expr<tag::address_of>         _make_address_of;
+    typedef _make_expr<tag::logical_not>        _make_logical_not;
+    typedef _make_expr<tag::pre_inc>            _make_pre_inc;
+    typedef _make_expr<tag::pre_dec>            _make_pre_dec;
+    typedef _make_expr<tag::post_inc>           _make_post_inc;
+    typedef _make_expr<tag::post_dec>           _make_post_dec;
+    typedef _make_expr<tag::shift_left>         _make_shift_left;
+    typedef _make_expr<tag::shift_right>        _make_shift_right;
+    typedef _make_expr<tag::multiplies>         _make_multiplies;
+    typedef _make_expr<tag::divides>            _make_divides;
+    typedef _make_expr<tag::modulus>            _make_modulus;
+    typedef _make_expr<tag::plus>               _make_plus;
+    typedef _make_expr<tag::minus>              _make_minus;
+    typedef _make_expr<tag::less>               _make_less;
+    typedef _make_expr<tag::greater>            _make_greater;
+    typedef _make_expr<tag::less_equal>         _make_less_equal;
+    typedef _make_expr<tag::greater_equal>      _make_greater_equal;
+    typedef _make_expr<tag::equal_to>           _make_equal_to;
+    typedef _make_expr<tag::not_equal_to>       _make_not_equal_to;
+    typedef _make_expr<tag::logical_or>         _make_logical_or;
+    typedef _make_expr<tag::logical_and>        _make_logical_and;
+    typedef _make_expr<tag::bitwise_and>        _make_bitwise_and;
+    typedef _make_expr<tag::bitwise_or>         _make_bitwise_or;
+    typedef _make_expr<tag::bitwise_xor>        _make_bitwise_xor;
+    typedef _make_expr<tag::comma>              _make_comma;
+    typedef _make_expr<tag::mem_ptr>            _make_mem_ptr;
+    typedef _make_expr<tag::assign>             _make_assign;
+    typedef _make_expr<tag::shift_left_assign>  _make_shift_left_assign;
+    typedef _make_expr<tag::shift_right_assign> _make_shift_right_assign;
+    typedef _make_expr<tag::multiplies_assign>  _make_multiplies_assign;
+    typedef _make_expr<tag::divides_assign>     _make_divides_assign;
+    typedef _make_expr<tag::modulus_assign>     _make_modulus_assign;
+    typedef _make_expr<tag::plus_assign>        _make_plus_assign;
+    typedef _make_expr<tag::minus_assign>       _make_minus_assign;
+    typedef _make_expr<tag::bitwise_and_assign> _make_bitwise_and_assign;
+    typedef _make_expr<tag::bitwise_or_assign>  _make_bitwise_or_assign;
+    typedef _make_expr<tag::bitwise_xor_assign> _make_bitwise_xor_assign;
+    typedef _make_expr<tag::subscript>          _make_subscript;
+    typedef _make_expr<tag::if_else_>           _make_if_else;
+    typedef _make_expr<tag::function>           _make_function;
 
     template<typename T>
     struct is_callable;
@@ -739,23 +742,23 @@ namespace boost { namespace proto
 
     typedef _child_c<0> _child0;
     typedef _child_c<1> _child1;
-    typedef _child_c<2> _child2;
     typedef _child0     _child;
     typedef _child0     _value;
     typedef _child0     _left;
     typedef _child1     _right;
 
-    // child3, child4, child5, ...
+    // _child2, _child3, _child4, ...
     #define M0(Z, N, DATA) typedef _child_c<N> BOOST_PP_CAT(_child, N);
     BOOST_PP_REPEAT_FROM_TO(
-        3
+        2
       , BOOST_PP_DEC(BOOST_PROTO_MAX_ARITY)
       , M0
       , ~
     )
     #undef M0
 
-    struct _ref;
+    struct _byref;
+    struct _byval;
 
     template<typename T>
     struct is_extension;

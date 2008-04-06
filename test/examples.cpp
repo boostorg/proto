@@ -291,7 +291,12 @@ namespace lazy_make_pair2
         template<typename This, typename First, typename Second>
         struct result<This(First, Second)>
         {
-            typedef std::pair<First, Second> type;
+            typedef
+                std::pair<
+                    BOOST_PROTO_UNCVREF(First)
+                  , BOOST_PROTO_UNCVREF(Second)
+                >
+            type;
         };
 
         template<typename First, typename Second>
