@@ -11,10 +11,11 @@
 
 #include <boost/proto/detail/prefix.hpp> // must be first include
 #include <boost/proto/transform/arg.hpp>
-#include <boost/proto/transform/lazy.hpp>
 #include <boost/proto/transform/call.hpp>
+#include <boost/proto/transform/default.hpp>
 #include <boost/proto/transform/fold.hpp>
 #include <boost/proto/transform/fold_tree.hpp>
+#include <boost/proto/transform/lazy.hpp>
 #include <boost/proto/transform/make.hpp>
 #include <boost/proto/transform/pass_through.hpp>
 #include <boost/proto/transform/when.hpp>

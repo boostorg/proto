@@ -13,8 +13,10 @@
 #include <boost/utility/result_of.hpp>
 #if BOOST_VERSION < 103500
 # include <boost/spirit/fusion/sequence/cons.hpp>
+# include <boost/spirit/fusion/sequence/tuple.hpp>
 #else
 # include <boost/fusion/include/cons.hpp>
+# include <boost/fusion/include/tuple.hpp>
 # include <boost/fusion/include/pop_front.hpp>
 #endif
 #include <boost/test/unit_test.hpp>
@@ -352,6 +354,82 @@ struct SquareAndPromoteInt
 //]
 #endif
 
+namespace lambda_transform
+{
+    //[LambdaTransform
+    template<typename N>
+    struct placeholder
+    {
+        typedef typename N::type type;
+        static typename N::value_type const value = N::value;
+    };
+
+    // A function object that calls fusion::at()
+    struct at : proto::callable
+    {
+        template<typename Sig>
+        struct result;
+
+        template<typename This, typename Cont, typename Index>
+        struct result<This(Cont, Index)>
+          : fusion::result_of::at<
+                typename boost::remove_reference<Cont>::type
+              , typename boost::remove_reference<Index>::type
+            >
+        {};
+
+        template<typename Cont, typename Index>
+        typename fusion::result_of::at<Cont, Index>::type
+        operator ()(Cont &cont, Index const &) const
+        {
+            return fusion::at<Index>(cont);
+        }
+    };
+
+    // A transform that evaluates a lambda expression.
+    struct LambdaEval
+      : proto::or_<
+            /*<<When you match a placeholder ...>>*/
+            proto::when<
+                proto::terminal<placeholder<_> >
+              /*<<... call at() with the data parameter, which
+              is a tuple, and the placeholder, which is an MPL
+              Integral Constant.>>*/
+              , at(proto::_data, proto::_value)
+            >
+            /*<<Otherwise, use the _default<> transform, which
+            gives the operators their usual C++ meanings.>>*/
+          , proto::otherwise< proto::_default<LambdaEval> >
+        >
+    {};
+
+    // Define the lambda placeholders
+    proto::terminal<placeholder<mpl::int_<0> > >::type const _1 = {{}};
+    proto::terminal<placeholder<mpl::int_<1> > >::type const _2 = {{}};
+
+    void test_lambda()
+    {
+        // a tuple that contains the values
+        // of _1 and _2
+        fusion::tuple<int, int> tup(2,3);
+
+        // Use LambdaEval to evaluate a lambda expression
+        int j = LambdaEval()( _2 - _1, 0, tup );
+        BOOST_CHECK_EQUAL(j, 1);
+
+        // You can mutate leaves in an expression tree
+        proto::literal<int> k(42);
+        int &l = LambdaEval()( k += 4, 0, tup );
+        BOOST_CHECK_EQUAL(k.get(), 46);
+        BOOST_CHECK_EQUAL(&l, &k.get());
+
+        // You can mutate the values in the tuple, too.
+        LambdaEval()( _1 += 4, 0, tup );
+        BOOST_CHECK_EQUAL(6, fusion::at_c<0>(tup));
+    }
+    //]
+}
+
 void test_examples()
 {
     //[ CalculatorArityTest
@@ -411,6 +489,8 @@ void test_examples()
     #ifndef BOOST_MSVC
     SquareAndPromoteInt()(proto::lit(1), i, i);
     #endif
+
+    lambda_transform::test_lambda();
 }
 
 using namespace boost::unit_test;
