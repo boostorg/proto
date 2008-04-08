@@ -549,7 +549,7 @@ namespace boost { namespace proto
 
     using namespace op;
 
-    namespace functor
+    namespace functional
     {
         struct left;
         struct right;
@@ -631,11 +631,11 @@ namespace boost { namespace proto
         struct reverse;
     }
 
-    typedef functor::flatten     _flatten;
-    typedef functor::pop_front   _pop_front;
-    typedef functor::reverse     _reverse;
-    typedef functor::eval        _eval;
-    typedef functor::deep_copy   _deep_copy;
+    typedef functional::flatten     _flatten;
+    typedef functional::pop_front   _pop_front;
+    typedef functional::reverse     _reverse;
+    typedef functional::eval        _eval;
+    typedef functional::deep_copy   _deep_copy;
 
     template<typename Tag, typename Domain = deduce_domain>
     struct _make_expr;

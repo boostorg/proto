@@ -366,8 +366,8 @@
                 {
                     return typename mpl::if_<
                         is_reference_wrapper<T>
-                      , functor::as_child<Domain>
-                      , functor::as_expr<Domain>
+                      , functional::as_child<Domain>
+                      , functional::as_expr<Domain>
                     >::type()(static_cast<unref_type &>(t));
                 }
             };
@@ -385,7 +385,7 @@
 
                 static type call(T &t)
                 {
-                    return functor::as_child<Domain>()(static_cast<unref_type &>(t));
+                    return functional::as_child<Domain>()(static_cast<unref_type &>(t));
                 }
             };
 
@@ -650,15 +650,15 @@
             };
         }
 
-        namespace functor
+        namespace functional
         {
             /// \brief A callable function object equivalent to the
             /// \c proto::make_expr() function.
             ///
-            /// In all cases, <tt>functor::make_expr\<Tag, Domain\>()(a0, ... aN)</tt>
+            /// In all cases, <tt>functional::make_expr\<Tag, Domain\>()(a0, ... aN)</tt>
             /// is equivalent to <tt>proto::make_expr\<Tag, Domain\>(a0, ... aN)</tt>.
             ///
-            /// <tt>functor::make_expr\<Tag\>()(a0, ... aN)</tt>
+            /// <tt>functional::make_expr\<Tag\>()(a0, ... aN)</tt>
             /// is equivalent to <tt>proto::make_expr\<Tag\>(a0, ... aN)</tt>.
             template<typename Tag, typename Domain  BOOST_PROTO_WHEN_BUILDING_DOCS(= deduce_domain)>
             struct make_expr
@@ -711,10 +711,10 @@
             /// \brief A callable function object equivalent to the
             /// \c proto::unpack_expr() function.
             ///
-            /// In all cases, <tt>functor::unpack_expr\<Tag, Domain\>()(seq)</tt>
+            /// In all cases, <tt>functional::unpack_expr\<Tag, Domain\>()(seq)</tt>
             /// is equivalent to <tt>proto::unpack_expr\<Tag, Domain\>(seq)</tt>.
             ///
-            /// <tt>functor::unpack_expr\<Tag\>()(seq)</tt>
+            /// <tt>functional::unpack_expr\<Tag\>()(seq)</tt>
             /// is equivalent to <tt>proto::unpack_expr\<Tag\>(seq)</tt>.
             template<typename Tag, typename Domain  BOOST_PROTO_WHEN_BUILDING_DOCS(= deduce_domain)>
             struct unpack_expr
@@ -799,7 +799,7 @@
                 BOOST_PROTO_CALLABLE()
             };
 
-        } // namespace functor
+        } // namespace functional
 
         /// \brief Construct an expression of the requested tag type
         /// with a domain and with the specified arguments as children.
@@ -922,21 +922,21 @@
         /// INTERNAL ONLY
         ///
         template<typename Tag, typename Domain>
-        struct is_callable<functor::make_expr<Tag, Domain> >
+        struct is_callable<functional::make_expr<Tag, Domain> >
           : mpl::true_
         {};
 
         /// INTERNAL ONLY
         ///
         template<typename Tag, typename Domain>
-        struct is_callable<functor::unpack_expr<Tag, Domain> >
+        struct is_callable<functional::unpack_expr<Tag, Domain> >
           : mpl::true_
         {};
 
         /// INTERNAL ONLY
         ///
         template<typename Tag, typename Domain>
-        struct is_callable<functor::unfused_expr<Tag, Domain> >
+        struct is_callable<functional::unfused_expr<Tag, Domain> >
           : mpl::true_
         {};
 
@@ -945,7 +945,7 @@
         {
             template<typename Sig>
             struct result
-              : functor::make_expr<Tag, Domain>::template result<Sig>
+              : functional::make_expr<Tag, Domain>::template result<Sig>
             {};
             
             #define M0(Z, N, DATA)                                                                  \

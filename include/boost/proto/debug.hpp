@@ -113,7 +113,7 @@ namespace boost { namespace proto
     #undef BOOST_PROTO_DEFINE_TAG_NAME
     }
 
-    namespace functor
+    namespace functional
     {
         /// \brief Pretty-print a Proto expression tree.
         ///
@@ -186,7 +186,7 @@ namespace boost { namespace proto
 
     /// \brief Pretty-print a Proto expression tree.
     ///
-    /// \note Equivalent to <tt>functor::display_expr(0, sout)(expr)</tt>
+    /// \note Equivalent to <tt>functional::display_expr(0, sout)(expr)</tt>
     /// \param expr The Proto expression tree to pretty-print
     /// \param sout The \c ostream to which the output should be
     ///             written. If not specified, defaults to
@@ -194,7 +194,7 @@ namespace boost { namespace proto
     template<typename Expr>
     void display_expr(Expr const &expr, std::ostream &sout)
     {
-        functor::display_expr(sout, 0)(expr);
+        functional::display_expr(sout, 0)(expr);
     }
 
     /// \overload
@@ -202,7 +202,7 @@ namespace boost { namespace proto
     template<typename Expr>
     void display_expr(Expr const &expr)
     {
-        functor::display_expr()(expr);
+        functional::display_expr()(expr);
     }
 
 }}

@@ -258,7 +258,7 @@ Fusion to print the function arguments in order.
             // pop_front() removes the "fun" child
             fusion::pop_front(fun(1,2,3,4))
             // Extract the ints from the terminal nodes
-          , functor::child<>()
+          , functional::child<>()
         )
       , display()
     );
@@ -284,7 +284,7 @@ over the terminals in an addition expression:
     fusion::for_each(
         fusion::transform(
             _1 + 2 + 3 + 4
-          , functor::child<>()
+          , functional::child<>()
         )
       , display()
     );
@@ -303,7 +303,7 @@ process is evaluated recursively. So the above can correctly be written as:
     fusion::for_each(
         fusion::transform(
             proto::flatten(_1 + 2 + 3 + 4)
-          , functor::child<>()
+          , functional::child<>()
         )
       , display()
     );
@@ -560,7 +560,7 @@ Below are the tools and a brief description of each.
             };
         }
 
-        namespace functor
+        namespace functional
         {
             // A callable function object equivalent of the
             // make_expr() function.
@@ -750,7 +750,7 @@ domain-specific wrapper. In the example below, expressions within the
             };
         }
 
-        namespace functor
+        namespace functional
         {
             // A callable function object equivalent of the
             // unpack_expr() function.
@@ -805,7 +805,7 @@ use `boost::ref()`, just as with _make_expr_.
 
 As with _make_expr_, _unpack_expr_ has a corresponding metafunction
 in the `proto::result_of` namespace for calculating its return type, as
-well as a callable function object form in the `proto::functor`
+well as a callable function object form in the `proto::functional`
 namespace.
 
 One last interesting point about _unpack_expr_: Proto expression
@@ -838,14 +838,14 @@ new node with the `tag::minus` tag and `i` and `j` as children.
       , BOUNDARGS                                           \
     )
 
-The `proto::functor::make_expr<>` function object makes it very simple
+The `proto::functional::make_expr<>` function object makes it very simple
 to create something that behaves like an expression factory function. For
 instance, the following defines a factory named `invert()` that
 "complements" its argument; that is, it builds a new node with type
 `tag::complement` as if Proto's `operator~` had been applied:
 
     // invert(x) is now a synonym for ~proto::as_expr(x)
-    proto::functor::make_expr<proto::tag::complement> const invert = {};
+    proto::functional::make_expr<proto::tag::complement> const invert = {};
 
 Such named "operators" are very important for domain-specific embedded
 languages. What's more, when defined as above, the `invert()` factory can
@@ -867,7 +867,7 @@ like this:
 
 Now, users of your function can invoke it like this: `foo<int>("foo!")`. If
 you want to seamlessly handle up to /N/ argument, you have to write all /N/
-overloads yourself --- `functor::make_expr<>` can't help you. For this
+overloads yourself --- `functional::make_expr<>` can't help you. For this
 situation, Proto provides the `BOOST_PROTO_DEFINE_VARARG_FUNCTION_TEMPLATE()`
 macro. You can invoke it as follows:
 

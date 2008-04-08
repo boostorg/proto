@@ -44,7 +44,7 @@ ready, I anticipate that it will eliminate the need for `proto::eval()`.]
             };
         }
 
-        namespace functor
+        namespace functional
         {
             // A callable function object type for evaluating
             // a Proto expression with a certain context.

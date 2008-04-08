@@ -61,11 +61,11 @@ private:
 };
 
 template<typename Fun, typename Expr>
-struct functor
+struct functional
 {
     typedef typename proto::result_of::eval<Expr, Fun>::type result_type;
 
-    functor(Expr const &expr)
+    functional(Expr const &expr)
       : expr_(expr)
     {}
 
@@ -81,9 +81,9 @@ private:
 };
 
 template<typename Fun, typename Expr>
-functor<Fun, Expr> as(Expr const &expr)
+functional<Fun, Expr> as(Expr const &expr)
 {
-    return functor<Fun, Expr>(expr);
+    return functional<Fun, Expr>(expr);
 }
 
 void test_calculator()

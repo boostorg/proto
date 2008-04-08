@@ -72,7 +72,7 @@
             };
         }
 
-        namespace functor
+        namespace functional
         {
             /// \brief A PolymorphicFunctionObject type for deep-copying
             /// Proto expression trees.
@@ -124,7 +124,7 @@
         /// \attention Terminals of reference-to-array type and of
         /// reference-to-function type are left unchanged.
         ///
-        /// \sa proto::functor::deep_copy.
+        /// \sa proto::functional::deep_copy.
         template<typename Expr>
         typename proto::result_of::deep_copy<Expr>::type
         deep_copy(Expr const &expr)

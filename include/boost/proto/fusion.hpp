@@ -118,7 +118,7 @@ namespace boost { namespace proto
 
     }
 
-    namespace functor
+    namespace functional
     {
         /// \brief A PolymorphicFunctionObject type that returns a "flattened"
         /// view of a Proto expression tree.
@@ -239,21 +239,21 @@ namespace boost { namespace proto
     /// INTERNAL ONLY
     ///
     template<>
-    struct is_callable<functor::flatten>
+    struct is_callable<functional::flatten>
       : mpl::true_
     {};
 
     /// INTERNAL ONLY
     ///
     template<>
-    struct is_callable<functor::pop_front>
+    struct is_callable<functional::pop_front>
       : mpl::true_
     {};
 
     /// INTERNAL ONLY
     ///
     template<>
-    struct is_callable<functor::reverse>
+    struct is_callable<functional::reverse>
       : mpl::true_
     {};
 

@@ -33,7 +33,7 @@ namespace boost { namespace proto
         };
     }
 
-    namespace functor
+    namespace functional
     {
         /// \brief A PolymorphicFunctionObject type for
         /// evaluating a given Proto expression with a given

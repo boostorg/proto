@@ -1517,7 +1517,7 @@
     #undef BOOST_PROTO_CHILD
     #undef BOOST_PROTO_IMPLICIT_ARG
 
-        namespace functor
+        namespace functional
         {
             /// \brief A callable PolymorphicFunctionObject that is
             /// equivalent to the \c as_expr() function.
@@ -2076,28 +2076,28 @@
         /// INTERNAL ONLY
         ///
         template<typename Domain>
-        struct is_callable<functor::as_expr<Domain> >
+        struct is_callable<functional::as_expr<Domain> >
           : mpl::true_
         {};
 
         /// INTERNAL ONLY
         ///
         template<typename Domain>
-        struct is_callable<functor::as_child<Domain> >
+        struct is_callable<functional::as_child<Domain> >
           : mpl::true_
         {};
 
         /// INTERNAL ONLY
         ///
         template<long N>
-        struct is_callable<functor::child_c<N> >
+        struct is_callable<functional::child_c<N> >
           : mpl::true_
         {};
 
         /// INTERNAL ONLY
         ///
         template<typename N>
-        struct is_callable<functor::child<N> >
+        struct is_callable<functional::child<N> >
           : mpl::true_
         {};
 
