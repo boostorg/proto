@@ -83,7 +83,7 @@
               : make_<R, Expr, State, Data>
             {};
 
-            #if BOOST_WORKAROUND(__GNUC__, == 3)
+            #if BOOST_WORKAROUND(__GNUC__, == 3) || (__GNUC__ == 4 && __GNUC_MINOR__ == 0)
             // work around GCC bug
             template<typename Tag, typename Args, long N, typename Expr, typename State, typename Data>
             struct make_if_<proto::expr<Tag, Args, N>, Expr, State, Data, false>
@@ -347,7 +347,7 @@
             };
         };
 
-        #if BOOST_WORKAROUND(__GNUC__, == 3)
+        #if BOOST_WORKAROUND(__GNUC__, == 3) || (__GNUC__ == 4 && __GNUC_MINOR__ == 0)
         // work around GCC bug
         template<typename Tag, typename Args, long Arity BOOST_PP_ENUM_TRAILING_PARAMS(N, typename A)>
         struct make<proto::expr<Tag, Args, Arity>(BOOST_PP_ENUM_PARAMS(N, A))>

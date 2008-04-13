@@ -214,7 +214,7 @@
                 BOOST_PROTO_DECLTYPE_(
                     proto::detail::make<r0>()
                   ? proto::detail::make<r1>()
-                  : proto::detail::make<r2>();
+                  : proto::detail::make<r2>()
                   , result_type
                 )
                 result_type operator ()(
@@ -228,7 +228,7 @@
                     typename Grammar::template impl<e2, State, Data> t2;
                     return t0(proto::child_c<0>(expr), state, data)
                          ? t1(proto::child_c<1>(expr), state, data)
-                         : t2(proto::child_c<2>(expr), state, data)
+                         : t2(proto::child_c<2>(expr), state, data);
                 }
             };
 

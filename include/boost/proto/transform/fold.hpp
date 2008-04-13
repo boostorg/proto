@@ -107,7 +107,7 @@
               , typename Expr
               , typename State
               , typename Data
-              , long Arity = remove_reference<Expr>::type::proto_arity::value
+              , long Arity = arity_of<Expr>::value
             >
             struct fold_impl
             {};
@@ -118,7 +118,7 @@
               , typename Expr
               , typename State
               , typename Data
-              , long Arity = remove_reference<Expr>::type::proto_arity::value
+              , long Arity = arity_of<Expr>::value
             >
             struct reverse_fold_impl
             {};

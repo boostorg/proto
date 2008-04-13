@@ -456,9 +456,6 @@ namespace boost { namespace proto
         struct unpack_expr;
 
         template<typename T, typename Void = void>
-        struct is_ref;
-
-        template<typename T, typename Void = void>
         struct is_expr;
 
         template<typename T, typename Void = void>
@@ -467,6 +464,9 @@ namespace boost { namespace proto
         template<typename Expr>
         struct tag_of;
 
+        template<typename Expr>
+        struct arity_of;
+
         template<typename T, typename Void = void>
         struct domain_of;
 
@@ -474,10 +474,10 @@ namespace boost { namespace proto
         struct matches;
     }
 
-    using result_of::is_ref;
     using result_of::is_expr;
     using result_of::is_domain;
     using result_of::tag_of;
+    using result_of::arity_of;
     using result_of::domain_of;
     using result_of::matches;
 

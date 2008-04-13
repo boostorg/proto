@@ -801,6 +801,30 @@
 
         } // namespace functional
 
+        /// TODO document me
+        template<typename Tag, typename Domain BOOST_PROTO_WHEN_BUILDING_DOCS(= deduce_domain)>
+        struct _make_expr : callable
+        {
+            template<typename Sig>
+            struct result
+              : functional::make_expr<Tag, Domain>::template result<Sig>
+            {};
+            
+            #define M0(Z, N, DATA)                                                                  \
+            template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                      \
+            BOOST_PP_CAT(detail::implicit_expr_, N)<BOOST_PP_ENUM_PARAMS_Z(Z, N, A)>                \
+            operator ()(BOOST_PP_ENUM_BINARY_PARAMS_Z(Z, N, A, &a)) const                           \
+            {                                                                                       \
+                BOOST_PP_CAT(detail::implicit_expr_, N)<BOOST_PP_ENUM_PARAMS_Z(Z, N, A)> that = {   \
+                    BOOST_PP_ENUM_PARAMS_Z(Z, N, a)                                                 \
+                };                                                                                  \
+                return that;                                                                        \
+            }                                                                                       \
+            /**/
+            BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_INC(BOOST_PROTO_MAX_ARITY), M0, ~)
+            #undef M0
+        };
+
         /// \brief Construct an expression of the requested tag type
         /// with a domain and with the specified arguments as children.
         ///
@@ -940,29 +964,6 @@
           : mpl::true_
         {};
 
-        template<typename Tag, typename Domain BOOST_PROTO_WHEN_BUILDING_DOCS(= deduce_domain)>
-        struct _make_expr : callable
-        {
-            template<typename Sig>
-            struct result
-              : functional::make_expr<Tag, Domain>::template result<Sig>
-            {};
-            
-            #define M0(Z, N, DATA)                                                                  \
-            template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                      \
-            BOOST_PP_CAT(detail::implicit_expr_, N)<BOOST_PP_ENUM_PARAMS_Z(Z, N, A)>                \
-            operator ()(BOOST_PP_ENUM_BINARY_PARAMS_Z(Z, N, A, &a)) const                           \
-            {                                                                                       \
-                BOOST_PP_CAT(detail::implicit_expr_, N)<BOOST_PP_ENUM_PARAMS_Z(Z, N, A)> that = {   \
-                    BOOST_PP_ENUM_PARAMS_Z(Z, N, a)                                                 \
-                };                                                                                  \
-                return that;                                                                        \
-            }                                                                                       \
-            /**/
-            BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_INC(BOOST_PROTO_MAX_ARITY), M0, ~)
-            #undef M0
-        };
-
         /// INTERNAL ONLY
         ///
         template<typename Tag, typename Domain>
@@ -1029,14 +1030,14 @@
                 >::type
             type;
             #else
-            static sized<BOOST_PP_INC(BOOST_PROTO_MAX_ARITY)> deducer(
-                BOOST_PP_ENUM_PARAMS(N, dont_care BOOST_PP_INTERCEPT)
-            );
-            #define M0(Z, X, DATA)                                                                  \
+            #define M0(N, F) char (&F)[BOOST_PP_INC(N)]
+            static M0(BOOST_PROTO_MAX_ARITY, deducer(
+                BOOST_PP_ENUM_PARAMS(N, dont_care BOOST_PP_INTERCEPT)));
+            #define M1(Z, X, DATA)                                                                  \
             typedef typename domain_of<BOOST_PP_CAT(A, X)>::type BOOST_PP_CAT(D, X);                \
             static BOOST_PP_CAT(D, X) &BOOST_PP_CAT(d, X);                                          \
             template<typename T>                                                                    \
-            static sized<BOOST_PP_INC(X)> deducer(                                                  \
+            static M0(X, deducer(                                                                   \
                 BOOST_PP_ENUM_PARAMS_Z(Z, X, default_domain BOOST_PP_INTERCEPT)                     \
                 BOOST_PP_COMMA_IF(X) T                                                              \
                 BOOST_PP_ENUM_TRAILING_PARAMS_Z(                                                    \
@@ -1044,9 +1045,10 @@
                   , BOOST_PP_DEC(BOOST_PP_SUB(N, X))                                                \
                   , typename nondeduced_domain<T>::type BOOST_PP_INTERCEPT                          \
                 )                                                                                   \
-            );
-            BOOST_PP_REPEAT(N, M0, ~)
+            ));
+            BOOST_PP_REPEAT(N, M1, ~)
             #undef M0
+            #undef M1
             BOOST_STATIC_CONSTANT(int, value = sizeof(deducer(BOOST_PP_ENUM_PARAMS(N, d))) - 1);
             typedef typename select_nth<value, BOOST_PP_ENUM_PARAMS(N, D)>::type type;
             #endif

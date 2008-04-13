@@ -120,7 +120,7 @@
           : mpl::false_
         {};
 
-        #if BOOST_WORKAROUND(__GNUC__, == 3)
+        #if BOOST_WORKAROUND(__GNUC__, == 3) || (__GNUC__ == 4 && __GNUC_MINOR__ == 0)
         // work around GCC bug
         template<typename Tag, typename Args, long N>
         struct is_callable<proto::expr<Tag, Args, N> >
@@ -198,18 +198,22 @@
                 typedef typename Expr::proto_tag type;
             };
 
-            /// INTERNAL ONLY
-            ///
-            template<typename T, typename Void  BOOST_PROTO_WHEN_BUILDING_DOCS(= void)>
-            struct is_ref
-              : mpl::false_
+            template<typename Expr>
+            struct tag_of<Expr &>
+            {
+                typedef typename Expr::proto_tag type;
+            };
+
+            /// \brief A metafunction that returns the arity of a
+            /// Proto expression.
+            template<typename Expr>
+            struct arity_of
+              : Expr::proto_arity
             {};
 
-            /// INTERNAL ONLY
-            ///
-            template<typename T>
-            struct is_ref<T, typename T::proto_is_ref_>
-              : mpl::true_
+            template<typename Expr>
+            struct arity_of<Expr &>
+              : Expr::proto_arity
             {};
 
             /// \brief A metafunction that computes the return type of the \c as_expr()

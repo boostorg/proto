@@ -33,7 +33,7 @@
               , typename Expr
               , typename State
               , typename Data
-              , long Arity = remove_reference<Expr>::type::proto_arity::value
+              , long Arity = arity_of<Expr>::value
             >
             struct pass_through_impl
             {};
