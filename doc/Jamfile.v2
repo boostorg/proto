@@ -13,6 +13,7 @@ doxygen protodoc
     :
         ../../../boost/proto/args.hpp
         ../../../boost/proto/context.hpp
+        ../../../boost/proto/core.hpp
         ../../../boost/proto/debug.hpp
         ../../../boost/proto/deep_copy.hpp
         ../../../boost/proto/domain.hpp
@@ -28,7 +29,6 @@ doxygen protodoc
         ../../../boost/proto/proto.hpp
         ../../../boost/proto/proto_fwd.hpp
 #        ../../../boost/proto/proto_typeof.hpp
-        ../../../boost/proto/ref.hpp
         ../../../boost/proto/tags.hpp
         ../../../boost/proto/traits.hpp
         ../../../boost/proto/transform.hpp
@@ -37,6 +37,7 @@ doxygen protodoc
         ../../../boost/proto/context/null.hpp
         ../../../boost/proto/transform/arg.hpp
         ../../../boost/proto/transform/call.hpp
+        ../../../boost/proto/transform/default.hpp
         ../../../boost/proto/transform/fold.hpp
         ../../../boost/proto/transform/fold_tree.hpp
         ../../../boost/proto/transform/lazy.hpp
@@ -105,5 +106,5 @@ boostbook standalone
         # better use SVG's instead:
         # <format>pdf:<xsl:param>admon.graphics.extension=".svg"
 
-#        <dependency>protodoc
+        <dependency>protodoc
     ;

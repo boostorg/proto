@@ -16,7 +16,7 @@ mini-language that will allow us to declare a lazily-evaluated arithmetic
 expression, such as `(_2 - _1) / _2 * 100`, where `_1` and `_2` are
 placeholders for values to be passed in when the expression is evaluated.
 
-[heading Defining Terminals]
+[heading Defining A Terminal]
 
 The first order of business is to define the placeholders `_1` and `_2`. For
 that, we'll use the _terminal_ metafunction.
