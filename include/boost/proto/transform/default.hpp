@@ -129,7 +129,7 @@
             BOOST_PROTO_BINARY_OP_RESULT(|=, tag::bitwise_or_assign)
             BOOST_PROTO_BINARY_OP_RESULT(^=, tag::bitwise_xor_assign)
 
-            #undef BOOST_PROTO_UNNARY_OP_RESULT
+            #undef BOOST_PROTO_UNARY_OP_RESULT
             #undef BOOST_PROTO_BINARY_OP_RESULT
 
             template<typename Expr, typename State, typename Data>
