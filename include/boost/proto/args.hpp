@@ -75,6 +75,7 @@
             typedef T type;
         };
 
+        /// INTERNAL ONLY
         template<typename T>
         struct term_ref<T const &>
         {

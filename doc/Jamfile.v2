@@ -40,6 +40,7 @@ doxygen protodoc
         ../../../boost/proto/transform/default.hpp
         ../../../boost/proto/transform/fold.hpp
         ../../../boost/proto/transform/fold_tree.hpp
+        ../../../boost/proto/transform/impl.hpp
         ../../../boost/proto/transform/lazy.hpp
         ../../../boost/proto/transform/make.hpp
         ../../../boost/proto/transform/pass_through.hpp
