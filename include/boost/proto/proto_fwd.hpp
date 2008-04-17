@@ -696,11 +696,19 @@ namespace boost { namespace proto
     struct is_transform;
 
     #define BOOST_PROTO_CALLABLE() typedef void proto_is_callable_;
+    #define BOOST_PROTO_TRANSFORM() typedef void proto_is_transform_;
 
     struct callable
     {
         BOOST_PROTO_CALLABLE()
     };
+
+    struct empty_base;
+
+    struct transform_base;
+
+    template<typename PrimitiveTransform, typename Base = transform_base>
+    struct transform;
 
     template<typename Grammar, typename Fun = Grammar>
     struct when;

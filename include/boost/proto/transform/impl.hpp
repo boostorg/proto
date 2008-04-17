@@ -20,12 +20,22 @@ namespace boost { namespace proto
       : PrimitiveTransform::template impl<Expr, State, Data>
     {};
 
-    template<typename PrimitiveTransform>
-    struct transform
+    struct transform_base
+    {
+        BOOST_PROTO_CALLABLE()
+        BOOST_PROTO_TRANSFORM()
+    };
+
+    struct empty_base
+    {};
+
+    template<
+        typename PrimitiveTransform
+      , typename Base BOOST_PROTO_WHEN_BUILDING_DOCS(= transform_base)
+    >
+    struct transform : Base
     {
         typedef PrimitiveTransform transform_type;
-        typedef void proto_is_transform_;
-        BOOST_PROTO_CALLABLE()
 
         template<typename Sig>
         struct result;
