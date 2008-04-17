@@ -9,6 +9,14 @@
 
 [variablelist
 [
+    [April 7, 2008]
+    [Proto is accepted into Boost.]
+]
+[
+    [March 1, 2008]
+    [Proto's Boost review begins.]
+]
+[
     [January 11, 2008]
     [Boost.Proto v3 brings separation of grammars and transforms and a
      "round" lambda syntax for defining transforms in-place.]
