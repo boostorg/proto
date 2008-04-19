@@ -114,6 +114,32 @@ namespace boost { namespace proto
         };
     };
 
+    /// \brief A PrimitiveTransform that returns the value of the
+    /// current terminal expression.
+    struct _value : transform<_value>
+    {
+        template<typename Expr, typename State, typename Data>
+        struct impl : transform_impl<Expr, State, Data>
+        {
+            typedef
+                typename result_of::value<Expr>::type
+            result_type;
+
+            /// \param expr The current expression.
+            /// \return <tt>proto::value(expr)</tt>
+            /// \throw nothrow
+            typename result_of::value<typename impl::expr_param>::type
+            operator ()(
+                typename impl::expr_param expr
+              , typename impl::state_param
+              , typename impl::data_param
+            ) const
+            {
+                return proto::value(expr);
+            }
+        };
+    };
+
     /// \brief A unary CallableTransform that wraps its argument
     /// in a \c boost::reference_wrapper\<\>.
     struct _byref : callable
@@ -217,6 +243,13 @@ namespace boost { namespace proto
     ///
     template<int I>
     struct is_callable<_child_c<I> >
+      : mpl::true_
+    {};
+
+    /// INTERNAL ONLY
+    ///
+    template<>
+    struct is_callable<_value>
       : mpl::true_
     {};
 

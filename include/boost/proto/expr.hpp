@@ -26,7 +26,6 @@
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/args.hpp>
     #include <boost/proto/traits.hpp>
-    #include <boost/proto/detail/child_traits.hpp>
     #include <boost/proto/detail/suffix.hpp>
 
     #if defined(_MSC_VER) && (_MSC_VER >= 1020)
@@ -54,18 +53,6 @@
         #define BOOST_PROTO_VOID(Z, N, DATA)                                                        \
             typedef void BOOST_PP_CAT(proto_child, N);                                              \
             typedef void BOOST_PP_CAT(proto_child_ref, N);                                          \
-            /**/
-
-        /// INTERNAL ONLY
-        ///
-        #define BOOST_PROTO_UNREF_CHILD_TYPE(Z, N, DATA)                                            \
-            typename detail::child_traits<typename Args::BOOST_PP_CAT(child, N)>::const_reference   \
-            /**/
-
-        /// INTERNAL ONLY
-        ///
-        #define BOOST_PROTO_UNREF_CHILD(Z, N, DATA)                                                 \
-            this->BOOST_PP_CAT(child, N)                                                            \
             /**/
 
             template<typename Tag, typename Arg>
@@ -119,8 +106,6 @@
 
         #undef BOOST_PROTO_CHILD
         #undef BOOST_PROTO_VOID
-        #undef BOOST_PROTO_UNREF_CHILD_TYPE
-        #undef BOOST_PROTO_UNREF_CHILD
     }}
 
     #if defined(_MSC_VER) && (_MSC_VER >= 1020)

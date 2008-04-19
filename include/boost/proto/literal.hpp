@@ -43,9 +43,9 @@ namespace boost { namespace proto
             typedef extends<terminal_type, literal<T, Domain>, Domain> base_type;
 
         public:
-            typedef typename proto::detail::child_traits<T>::value_type value_type;
-            typedef typename proto::detail::child_traits<T>::reference reference;
-            typedef typename proto::detail::child_traits<T>::const_reference const_reference;
+            typedef typename terminal_type::proto_child_ref0::value_type value_type;
+            typedef typename terminal_type::proto_child_ref0::reference reference;
+            typedef typename terminal_type::proto_child_ref0::const_reference const_reference;
 
             template<typename U>
             literal(U &u)

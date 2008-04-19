@@ -206,7 +206,7 @@ namespace boost { namespace spirit2
         // Extract the child from terminals
         struct SpiritTerminal
           : or_<
-                when< AnyChar,          _child >
+                when< AnyChar,          _value >
               , when< CharLiteral,      if_<_icase, ichar(_value), _value> >
               , when< CharParser,       if_<_icase, ichar(_value(_child1)), _value(_child1)> >  // char_('a')
               , when< NTBSLiteral,      if_<_icase, istr(_value), char const*(_value)> >

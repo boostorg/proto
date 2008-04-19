@@ -43,7 +43,6 @@
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/args.hpp>
     #include <boost/proto/tags.hpp>
-    #include <boost/proto/detail/child_traits.hpp>
     #include <boost/proto/transform/pass_through.hpp>
     #include <boost/proto/detail/suffix.hpp>
 
@@ -425,8 +424,60 @@
             ///
             template<typename Expr>
             struct value
-              : child_c<Expr, 0>
-            {};
+            {
+                /// The raw type of the Nth child as it is stored within
+                /// \c Expr. This may be a value or a reference
+                typedef typename Expr::proto_child0 value_type;
+                
+                /// The "value" type of the child, suitable for return by value,
+                /// computed as follows:
+                /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
+                /// \li <tt>T[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
+                /// \li <tt>T const &</tt> becomes <tt>T</tt>
+                /// \li <tt>T &</tt> becomes <tt>T</tt>
+                /// \li <tt>T</tt> becomes <tt>T</tt>
+                typedef typename Expr::proto_child_ref0::value_type type;
+            };
+
+            template<typename Expr>
+            struct value<Expr &>
+            {
+                /// The raw type of the Nth child as it is stored within
+                /// \c Expr. This may be a value or a reference
+                typedef typename Expr::proto_child0 value_type;
+
+                /// The "reference" type of the child, suitable for return by
+                /// reference, computed as follows:
+                /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
+                /// \li <tt>T[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
+                /// \li <tt>T const &</tt> becomes <tt>T const &</tt>
+                /// \li <tt>T &</tt> becomes <tt>T &</tt>
+                /// \li <tt>T</tt> becomes <tt>T &</tt>
+                typedef typename Expr::proto_child_ref0::reference type;
+            };
+
+            template<typename Expr>
+            struct value<Expr const &>
+            {
+                /// The raw type of the Nth child as it is stored within
+                /// \c Expr. This may be a value or a reference
+                typedef typename Expr::proto_child0 value_type;
+                
+                /// The "const reference" type of the child, suitable for return by
+                /// const reference, computed as follows:
+                /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
+                /// \li <tt>T[N]</tt> becomes <tt>T const(&)[N]</tt>
+                /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
+                /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
+                /// \li <tt>T const &</tt> becomes <tt>T const &</tt>
+                /// \li <tt>T &</tt> becomes <tt>T &</tt>
+                /// \li <tt>T</tt> becomes <tt>T const &</tt>
+                typedef typename Expr::proto_child_ref0::const_reference type;
+            };
 
             // TODO left<> and right<> force the instantiation of Expr.
             // Couldn't we partially specialize them on proto::expr< T, A >
@@ -1953,7 +2004,7 @@
         /// \overload
         ///
         template<typename Expr2>
-        typename detail::child_traits<typename Expr2::proto_base_expr::proto_child0>::reference
+        typename Expr2::proto_base_expr::proto_child_ref0::reference
         child(Expr2 &expr2 BOOST_PROTO_DISABLE_IF_IS_CONST(Expr2))
         {
             return expr2.proto_base().child0;
@@ -1962,7 +2013,7 @@
         /// \overload
         ///
         template<typename Expr2>
-        typename detail::child_traits<typename Expr2::proto_base_expr::proto_child0>::const_reference
+        typename Expr2::proto_base_expr::proto_child_ref0::const_reference
         child(Expr2 const &expr2)
         {
             return expr2.proto_base().child0;
@@ -2224,16 +2275,12 @@
 
                 /// The "value" type of the child, suitable for return by value,
                 /// computed as follows:
-                /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
-                /// \li <tt>T[N]</tt> becomes <tt>T(&)[N]</tt>
-                /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
-                /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
                 /// \li <tt>T const &</tt> becomes <tt>T</tt>
                 /// \li <tt>T &</tt> becomes <tt>T</tt>
                 /// \li <tt>T</tt> becomes <tt>T</tt>
-                typedef typename detail::child_traits<value_type>::value_type type;
+                typedef typename Expr::BOOST_PP_CAT(proto_child_ref, N)::value_type type;
             };
-            
+
             template<typename Expr>
             struct child_c<Expr &, N>
             {
@@ -2243,15 +2290,11 @@
 
                 /// The "reference" type of the child, suitable for return by
                 /// reference, computed as follows:
-                /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
-                /// \li <tt>T[N]</tt> becomes <tt>T(&)[N]</tt>
-                /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
-                /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
                 /// \li <tt>T const &</tt> becomes <tt>T const &</tt>
                 /// \li <tt>T &</tt> becomes <tt>T &</tt>
                 /// \li <tt>T</tt> becomes <tt>T &</tt>
-                typedef typename detail::child_traits<value_type>::reference type;
-                
+                typedef typename Expr::BOOST_PP_CAT(proto_child_ref, N)::reference type;
+
                 /// INTERNAL ONLY
                 ///
                 static type call(Expr &expr)
@@ -2259,7 +2302,7 @@
                     return expr.proto_base().BOOST_PP_CAT(child, N);
                 }
             };
-            
+
             template<typename Expr>
             struct child_c<Expr const &, N>
             {
@@ -2269,14 +2312,10 @@
                 
                 /// The "const reference" type of the child, suitable for return by
                 /// const reference, computed as follows:
-                /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
-                /// \li <tt>T[N]</tt> becomes <tt>T const(&)[N]</tt>
-                /// \li <tt>T(&)[N]</tt> becomes <tt>T(&)[N]</tt>
-                /// \li <tt>R(&)(A0,...)</tt> becomes <tt>R(&)(A0,...)</tt>
                 /// \li <tt>T const &</tt> becomes <tt>T const &</tt>
                 /// \li <tt>T &</tt> becomes <tt>T &</tt>
                 /// \li <tt>T</tt> becomes <tt>T const &</tt>
-                typedef typename detail::child_traits<value_type>::const_reference type;
+                typedef typename Expr::BOOST_PP_CAT(proto_child_ref, N)::const_reference type;
 
                 /// INTERNAL ONLY
                 ///

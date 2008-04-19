@@ -48,6 +48,25 @@
 
             template<typename Expr, typename Context, long Arity = Expr::proto_arity::value>
             struct is_expr_handled;
+
+            template<typename Expr, typename Context>
+            struct is_expr_handled<Expr, Context, 0>
+            {
+                static callable_context_wrapper<Context, 1> &sctx_;
+                static Expr &sexpr_;
+                static typename Expr::proto_tag &stag_;
+
+                BOOST_STATIC_CONSTANT(bool, value =
+                (
+                    sizeof(yes_type) ==
+                    sizeof(
+                        detail::check_is_expr_handled(
+                            (sctx_(stag_, proto::value(sexpr_)), 0)
+                        )
+                )));
+
+                typedef mpl::bool_<value> type;
+            };
         }
 
         namespace context
@@ -71,6 +90,38 @@
             >
             struct callable_eval
             {};
+
+            /// \brief A BinaryFunction that accepts a Proto expression and a
+            /// callable context and calls the context with the expression tag
+            /// and children as arguments, effectively fanning the expression
+            /// out.
+            ///
+            /// <tt>callable_eval\<\></tt> requires that \c Context is a
+            /// PolymorphicFunctionObject that can be invoked with \c Expr's
+            /// tag and children as expressions, as follows:
+            ///
+            /// \code
+            /// context(Expr::proto_tag(), value(expr))
+            /// \endcode
+            template<typename Expr, typename Context>
+            struct callable_eval<Expr, Context, 0>
+            {
+                typedef typename proto::result_of::value<Expr const &>::type value_type;
+
+                typedef
+                    typename boost::result_of<
+                        Context(typename Expr::proto_tag, value_type)
+                    >::type
+                result_type;
+
+                /// \param expr The current expression
+                /// \param context The callable evaluation context
+                /// \return <tt>context(Expr::proto_tag(), value(expr))</tt>
+                result_type operator ()(Expr &expr, Context &context) const
+                {
+                    return context(typename Expr::proto_tag(), proto::value(expr));
+                }
+            };
 
             /// \brief An evaluation context adaptor that makes authoring a
             /// context a simple matter of writing function overloads, rather
@@ -176,7 +227,7 @@
         /**/
 
     #define BOOST_PP_ITERATION_PARAMS_1                                                             \
-        (3, (0, BOOST_PROTO_MAX_ARITY, <boost/proto/context/callable.hpp>))                         \
+        (3, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/context/callable.hpp>))                         \
         /**/
 
     #include BOOST_PP_ITERATE()
@@ -191,11 +242,9 @@
 #else
 
     #define N BOOST_PP_ITERATION()
-    #define ARG_COUNT BOOST_PP_MAX(1, N)
 
         namespace detail
         {
-            #if N > 0
             template<typename Context>
             struct callable_context_wrapper<Context, N>
               : remove_cv<Context>::type
@@ -204,18 +253,17 @@
                 typedef
                     private_type_ const &fun_type(
                         BOOST_PP_ENUM_PARAMS(
-                            BOOST_PP_INC(ARG_COUNT)
+                            BOOST_PP_INC(N)
                           , detail::dont_care BOOST_PP_INTERCEPT
                         )
                     );
                 operator fun_type *() const;
             };
-            #endif
 
             template<typename Expr, typename Context>
             struct is_expr_handled<Expr, Context, N>
             {
-                static callable_context_wrapper<Context, ARG_COUNT> &sctx_;
+                static callable_context_wrapper<Context, N> &sctx_;
                 static Expr &sexpr_;
                 static typename Expr::proto_tag &stag_;
 
@@ -226,7 +274,7 @@
                         detail::check_is_expr_handled(
                             (sctx_(
                                 stag_
-                                BOOST_PP_ENUM_TRAILING(ARG_COUNT, BOOST_PROTO_CHILD_N, sexpr_)
+                                BOOST_PP_ENUM_TRAILING(N, BOOST_PROTO_CHILD_N, sexpr_)
                             ), 0)
                         )
                 )));
@@ -252,13 +300,13 @@
             template<typename Expr, typename Context>
             struct callable_eval<Expr, Context, N>
             {
-                BOOST_PP_REPEAT(ARG_COUNT, BOOST_PROTO_CHILD_N_TYPE, Expr)
+                BOOST_PP_REPEAT(N, BOOST_PROTO_CHILD_N_TYPE, Expr)
 
                 typedef
                     typename boost::result_of<
                         Context(
                             typename Expr::proto_tag
-                            BOOST_PP_ENUM_TRAILING_PARAMS(ARG_COUNT, child)
+                            BOOST_PP_ENUM_TRAILING_PARAMS(N, child)
                         )
                     >::type
                 result_type;
@@ -270,13 +318,12 @@
                 {
                     return context(
                         typename Expr::proto_tag()
-                        BOOST_PP_ENUM_TRAILING(ARG_COUNT, BOOST_PROTO_CHILD_N, expr)
+                        BOOST_PP_ENUM_TRAILING(N, BOOST_PROTO_CHILD_N, expr)
                     );
                 }
             };
         }
 
     #undef N
-    #undef ARG_COUNT
 
 #endif

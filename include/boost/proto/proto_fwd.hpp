@@ -745,13 +745,14 @@ namespace boost { namespace proto
     struct _state;
     struct _data;
 
+    struct _value;
+
     template<int I>
     struct _child_c;
 
     typedef _child_c<0> _child0;
     typedef _child_c<1> _child1;
     typedef _child0     _child;
-    typedef _child0     _value;
     typedef _child0     _left;
     typedef _child1     _right;
 

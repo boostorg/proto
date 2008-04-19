@@ -19,6 +19,8 @@
     #include <boost/preprocessor/repetition/enum_params.hpp>
     #include <boost/preprocessor/repetition/repeat.hpp>
     #include <boost/preprocessor/repetition/repeat_from_to.hpp>
+    #include <boost/type_traits/is_function.hpp>
+    #include <boost/mpl/if.hpp>
     #include <boost/mpl/void.hpp>
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/detail/suffix.hpp>
@@ -47,6 +49,9 @@
             typedef typename Expr::proto_args proto_args;
             typedef typename Expr::proto_arity proto_arity;
             typedef typename Expr::proto_domain proto_domain;
+            typedef proto_derived_expr value_type;
+            typedef Expr &reference;
+            typedef Expr const &const_reference;
         };
 
         /// INTERNAL ONLY
@@ -59,27 +64,72 @@
             typedef typename Expr::proto_args proto_args;
             typedef typename Expr::proto_arity proto_arity;
             typedef typename Expr::proto_domain proto_domain;
+            typedef proto_derived_expr value_type;
+            typedef Expr &reference;
+            typedef Expr &const_reference;
         };
-        
+
         /// INTERNAL ONLY
         template<typename T>
         struct term_ref
         {
-            typedef T type;
+            typedef T value_type;
+            typedef T &reference;
+            typedef T const &const_reference;
         };
 
         /// INTERNAL ONLY
         template<typename T>
         struct term_ref<T &>
         {
-            typedef T type;
+            typedef typename mpl::if_c<is_function<T>::value, T &, T>::type value_type;
+            typedef T &reference;
+            typedef T &const_reference;
         };
 
         /// INTERNAL ONLY
         template<typename T>
         struct term_ref<T const &>
         {
-            typedef T type;
+            typedef T value_type;
+            typedef T const &reference;
+            typedef T const &const_reference;
+        };
+
+        /// INTERNAL ONLY
+        template<typename T, std::size_t N>
+        struct term_ref<T (&)[N]>
+        {
+            typedef T (&value_type)[N];
+            typedef T (&reference)[N];
+            typedef T (&const_reference)[N];
+        };
+
+        /// INTERNAL ONLY
+        template<typename T, std::size_t N>
+        struct term_ref<T const (&)[N]>
+        {
+            typedef T const (&value_type)[N];
+            typedef T const (&reference)[N];
+            typedef T const (&const_reference)[N];
+        };
+
+        /// INTERNAL ONLY
+        template<typename T, std::size_t N>
+        struct term_ref<T[N]>
+        {
+            typedef T (&value_type)[N];
+            typedef T (&reference)[N];
+            typedef T const (&const_reference)[N];
+        };
+
+        /// INTERNAL ONLY
+        template<typename T, std::size_t N>
+        struct term_ref<T const[N]>
+        {
+            typedef T const (&value_type)[N];
+            typedef T const (&reference)[N];
+            typedef T const (&const_reference)[N];
         };
 
         /// \brief A type sequence, for use as the 2nd parameter to the \c expr\<\> class template.

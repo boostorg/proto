@@ -67,6 +67,7 @@ namespace boost { namespace proto
           : fusion::iterator_base<expr_iterator<Expr, Pos> >
         {
             typedef Expr expr_type;
+            typedef typename Expr::proto_tag proto_tag;
             BOOST_STATIC_CONSTANT(long, index = Pos);
             BOOST_PROTO_FUSION_DEFINE_CATEGORY(fusion::random_access_traversal_tag)
             BOOST_PROTO_FUSION_DEFINE_TAG(tag::proto_expr_iterator)
@@ -338,13 +339,26 @@ namespace boost { namespace fusion
         template<>
         struct value_of_impl<proto::tag::proto_expr_iterator>
         {
-            template<typename Iterator>
+            template<
+                typename Iterator
+              , long Arity = proto::arity_of<typename Iterator::expr_type>::value
+            >
             struct apply
             {
                 typedef
                     typename proto::result_of::child_c<
                         typename Iterator::expr_type
                       , Iterator::index
+                    >::value_type
+                type;
+            };
+
+            template<typename Iterator>
+            struct apply<Iterator, 0>
+            {
+                typedef
+                    typename proto::result_of::value<
+                        typename Iterator::expr_type
                     >::value_type
                 type;
             };
@@ -366,19 +380,37 @@ namespace boost { namespace fusion
         template<>
         struct deref_impl<proto::tag::proto_expr_iterator>
         {
-            template<typename Iterator>
+            template<
+                typename Iterator
+              , long Arity = proto::arity_of<typename Iterator::expr_type>::value
+            >
             struct apply
             {
                 typedef
                     typename proto::result_of::child_c<
-                        typename Iterator::expr_type const
+                        typename Iterator::expr_type const &
                       , Iterator::index
-                    >::type const &
+                    >::type
                 type;
 
                 static type call(Iterator const &iter)
                 {
                     return proto::child_c<Iterator::index>(iter.expr);
+                }
+            };
+            
+            template<typename Iterator>
+            struct apply<Iterator, 0>
+            {
+                typedef
+                    typename proto::result_of::value<
+                        typename Iterator::expr_type const &
+                    >::type
+                type;
+
+                static type call(Iterator const &iter)
+                {
+                    return proto::value(iter.expr);
                 }
             };
         };
@@ -516,13 +548,27 @@ namespace boost { namespace fusion
         template<>
         struct value_at_impl<proto::tag::proto_expr>
         {
-            template<typename Sequence, typename Index>
+            template<
+                typename Sequence
+              , typename Index
+              , long Arity = proto::arity_of<Sequence>::value
+            >
             struct apply
             {
                 typedef
                     typename proto::result_of::child_c<
                         Sequence
                       , Index::value
+                    >::value_type
+                type;
+            };
+
+            template<typename Sequence, typename Index>
+            struct apply<Sequence, Index, 0>
+            {
+                typedef
+                    typename proto::result_of::value<
+                        Sequence
                     >::value_type
                 type;
             };
@@ -534,7 +580,11 @@ namespace boost { namespace fusion
         template<>
         struct at_impl<proto::tag::proto_expr>
         {
-            template<typename Sequence, typename Index>
+            template<
+                typename Sequence
+              , typename Index
+              , long Arity = proto::arity_of<Sequence>::value
+            >
             struct apply
             {
                 typedef
@@ -551,18 +601,17 @@ namespace boost { namespace fusion
             };
 
             template<typename Sequence, typename Index>
-            struct apply<Sequence const, Index>
+            struct apply<Sequence, Index, 0>
             {
                 typedef
-                    typename proto::result_of::child_c<
-                        Sequence const &
-                      , Index::value
+                    typename proto::result_of::value<
+                        Sequence &
                     >::type
                 type;
 
-                static type call(Sequence const &seq)
+                static type call(Sequence &seq)
                 {
-                    return proto::child_c<Index::value>(seq);
+                    return proto::value(seq);
                 }
             };
         };

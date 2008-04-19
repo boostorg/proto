@@ -55,9 +55,7 @@
             struct by_value_generator_;
 
         #define BOOST_PROTO_DEFINE_BY_VALUE_TYPE(Z, N, Expr)                                        \
-            typename detail::child_traits<                                                          \
-                typename expr_traits<Expr>::args::BOOST_PP_CAT(child, N)                            \
-            >::value_type                                                                           \
+            typename expr_traits<Expr>::args::BOOST_PP_CAT(child_ref, N)::proto_derived_expr        \
             /**/
 
         #define BOOST_PROTO_DEFINE_BY_VALUE(Z, N, expr)                                             \
@@ -69,7 +67,7 @@
             {
                 typedef proto::expr<
                     tag::terminal
-                  , term<BOOST_PROTO_DEFINE_BY_VALUE_TYPE(~, 0, Expr) >
+                  , term<typename expr_traits<Expr>::args::child_ref0::value_type>
                 > type;
 
                 static type const make(Expr const &expr)
@@ -263,7 +261,7 @@
                 typedef proto::expr<
                     typename expr_traits<Expr>::tag
                   , BOOST_PP_CAT(list, N)<
-                        // typename detail::child_traits<typename expr_traits<Expr>::args::child0>::value_type, ...
+                        // typename expr_traits<Expr>::args::child_ref0::proto_derived_expr, ...
                         BOOST_PP_ENUM(N, BOOST_PROTO_DEFINE_BY_VALUE_TYPE, Expr)
                     >
                 > type;
