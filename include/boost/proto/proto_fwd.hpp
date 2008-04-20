@@ -406,7 +406,7 @@ namespace boost { namespace proto
             typename T
           , typename Domain = default_domain
           , typename Void = void
-          #ifdef BOOST_PROTO_BROKEN_PTS 
+          #ifdef BOOST_PROTO_BROKEN_PTS
           , typename Void2 = void
           #endif
         >
@@ -416,7 +416,7 @@ namespace boost { namespace proto
             typename T
           , typename Domain = default_domain
           , typename Void = void
-          #ifdef BOOST_PROTO_BROKEN_PTS 
+          #ifdef BOOST_PROTO_BROKEN_PTS
           , typename Void2 = void
           #endif
         >

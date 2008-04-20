@@ -233,7 +233,7 @@
                 typename T
               , typename Domain BOOST_PROTO_WHEN_BUILDING_DOCS(= default_domain)
               , typename Void   BOOST_PROTO_WHEN_BUILDING_DOCS(= void)
-              #ifdef BOOST_PROTO_BROKEN_PTS 
+              #ifdef BOOST_PROTO_BROKEN_PTS
               , typename Void2  BOOST_PROTO_WHEN_BUILDING_DOCS(= void)
               #endif
             >
@@ -297,7 +297,7 @@
                 T
               , typename T::proto_domain
               , typename T::proto_is_expr_
-              #ifdef BOOST_PROTO_BROKEN_PTS 
+              #ifdef BOOST_PROTO_BROKEN_PTS
               , void
               #endif
             >
@@ -328,7 +328,7 @@
                 typename T
               , typename Domain BOOST_PROTO_WHEN_BUILDING_DOCS(= default_domain)
               , typename Void   BOOST_PROTO_WHEN_BUILDING_DOCS(= void)
-              #ifdef BOOST_PROTO_BROKEN_PTS 
+              #ifdef BOOST_PROTO_BROKEN_PTS
               , typename Void2  BOOST_PROTO_WHEN_BUILDING_DOCS(= void)
               #endif
             >
@@ -361,7 +361,7 @@
                 T
               , Domain
               , typename T::proto_is_expr_
-              #ifdef BOOST_PROTO_BROKEN_PTS 
+              #ifdef BOOST_PROTO_BROKEN_PTS
               , typename disable_if<is_same<Domain, typename T::proto_domain> >::type
               #endif
             >
@@ -393,7 +393,7 @@
                 T
               , typename T::proto_domain
               , typename T::proto_is_expr_
-              #ifdef BOOST_PROTO_BROKEN_PTS 
+              #ifdef BOOST_PROTO_BROKEN_PTS
               , void
               #endif
             >
@@ -428,7 +428,7 @@
                 /// The raw type of the Nth child as it is stored within
                 /// \c Expr. This may be a value or a reference
                 typedef typename Expr::proto_child0 value_type;
-                
+
                 /// The "value" type of the child, suitable for return by value,
                 /// computed as follows:
                 /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
@@ -466,7 +466,7 @@
                 /// The raw type of the Nth child as it is stored within
                 /// \c Expr. This may be a value or a reference
                 typedef typename Expr::proto_child0 value_type;
-                
+
                 /// The "const reference" type of the child, suitable for return by
                 /// const reference, computed as follows:
                 /// \li <tt>T const(&)[N]</tt> becomes <tt>T const(&)[N]</tt>
@@ -519,7 +519,7 @@
                 struct impl : transform_impl<Expr, State, Data>
                 {
                     typedef Expr result_type;
-                    
+
                     /// \param expr The current expression
                     /// \pre <tt>matches\<Expr, terminal\<T\> \>::::value</tt> is \c true.
                     /// \return \c expr
@@ -2309,7 +2309,7 @@
                 /// The raw type of the Nth child as it is stored within
                 /// \c Expr. This may be a value or a reference
                 typedef typename Expr::BOOST_PP_CAT(proto_child, N) value_type;
-                
+
                 /// The "const reference" type of the child, suitable for return by
                 /// const reference, computed as follows:
                 /// \li <tt>T const &</tt> becomes <tt>T const &</tt>

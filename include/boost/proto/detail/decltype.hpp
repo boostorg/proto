@@ -36,7 +36,7 @@
 #  define BOOST_PROTO_DECLTYPE_(EXPR, TYPE)                                                         \
     BOOST_PROTO_DECLTYPE_NESTED_TYPEDEF_TPL_(BOOST_PP_CAT(nested_, TYPE), (EXPR))                   \
     typedef typename BOOST_PP_CAT(nested_, TYPE)::type TYPE;
-# endif        
+# endif
 #else
 /// INTERNAL ONLY
 ///
@@ -82,7 +82,7 @@ namespace boost { namespace proto
 
         template<typename T, typename U = T>
         struct result_of_fixup
-          : mpl::if_<is_function<T>, T *, U>
+          : mpl::if_c<is_function<T>::value, T *, U>
         {};
 
         template<typename T, typename U>
@@ -94,6 +94,12 @@ namespace boost { namespace proto
         struct result_of_fixup<T *, U>
           : result_of_fixup<T, U>
         {};
+
+        template<typename R, typename T, typename U>
+        struct result_of_fixup<R T::*, U>
+        {
+            typedef R T::*type;
+        };
 
         template<typename T, typename U>
         struct result_of_fixup<T const, U>

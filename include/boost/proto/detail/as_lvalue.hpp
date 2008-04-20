@@ -22,7 +22,7 @@ namespace boost { namespace proto
             int_() {}
             int_(int) {}
         };
-    
+
         template<typename T>
         T &as_lvalue(T &t, int = 0)
         {

@@ -246,7 +246,7 @@
                     );
                 }
             };
-            
+
                 /// Let \c x be <tt>when\<_, A0\>()(expr, state, data)</tt> and \c X
                 /// be the type of \c x.
                 /// Let \c y be <tt>when\<_, A1\>()(expr, state, data)</tt> and \c Y

@@ -97,6 +97,8 @@
         /// passed to it.
         struct default_generator
         {
+            BOOST_PROTO_CALLABLE()
+
             template<typename Sig>
             struct result;
 
@@ -126,11 +128,25 @@
         template<template<typename> class Extends>
         struct generator
         {
+            BOOST_PROTO_CALLABLE()
+
             template<typename Sig>
             struct result;
 
             template<typename This, typename Expr>
             struct result<This(Expr)>
+            {
+                typedef Extends<Expr> type;
+            };
+
+            template<typename This, typename Expr>
+            struct result<This(Expr &)>
+            {
+                typedef Extends<Expr> type;
+            };
+
+            template<typename This, typename Expr>
+            struct result<This(Expr const &)>
             {
                 typedef Extends<Expr> type;
             };
@@ -157,11 +173,25 @@
         template<template<typename> class Extends>
         struct pod_generator
         {
+            BOOST_PROTO_CALLABLE()
+
             template<typename Sig>
             struct result;
 
             template<typename This, typename Expr>
             struct result<This(Expr)>
+            {
+                typedef Extends<Expr> type;
+            };
+
+            template<typename This, typename Expr>
+            struct result<This(Expr &)>
+            {
+                typedef Extends<Expr> type;
+            };
+
+            template<typename This, typename Expr>
+            struct result<This(Expr const &)>
             {
                 typedef Extends<Expr> type;
             };
@@ -177,7 +207,7 @@
         };
 
         /// \brief A generator that replaces child nodes held by
-        /// reference with ones held by value. Use with 
+        /// reference with ones held by value. Use with
         /// \c compose_generators to forward that result to another
         /// generator.
         ///
@@ -190,11 +220,29 @@
         /// <tt>compose_generators\<by_value_generator, MyGenerator\></tt>.
         struct by_value_generator
         {
+            BOOST_PROTO_CALLABLE()
+
             template<typename Sig>
             struct result;
 
             template<typename This, typename Expr>
             struct result<This(Expr)>
+            {
+                typedef
+                    typename detail::by_value_generator_<Expr>::type
+                type;
+            };
+
+            template<typename This, typename Expr>
+            struct result<This(Expr &)>
+            {
+                typedef
+                    typename detail::by_value_generator_<Expr>::type
+                type;
+            };
+
+            template<typename This, typename Expr>
+            struct result<This(Expr const &)>
             {
                 typedef
                     typename detail::by_value_generator_<Expr>::type
@@ -223,6 +271,8 @@
         template<typename First, typename Second>
         struct compose_generators
         {
+            BOOST_PROTO_CALLABLE()
+
             template<typename Sig>
             struct result;
 
@@ -231,7 +281,27 @@
             {
                 typedef
                     typename Second::template result<
-                        typename First::template result<void(Expr)>::type
+                        void(typename First::template result<void(Expr)>::type)
+                    >::type
+                type;
+            };
+
+            template<typename This, typename Expr>
+            struct result<This(Expr &)>
+            {
+                typedef
+                    typename Second::template result<
+                        void(typename First::template result<void(Expr)>::type)
+                    >::type
+                type;
+            };
+
+            template<typename This, typename Expr>
+            struct result<This(Expr const &)>
+            {
+                typedef
+                    typename Second::template result<
+                        void(typename First::template result<void(Expr)>::type)
                     >::type
                 type;
             };
@@ -246,6 +316,36 @@
         };
 
         BOOST_PROTO_END_ADL_NAMESPACE(generatorns_)
+
+        /// INTERNAL ONLY
+        template<>
+        struct is_callable<default_generator>
+          : mpl::true_
+        {};
+
+        /// INTERNAL ONLY
+        template<template<typename> class Extends>
+        struct is_callable<generator<Extends> >
+          : mpl::true_
+        {};
+
+        /// INTERNAL ONLY
+        template<template<typename> class Extends>
+        struct is_callable<pod_generator<Extends> >
+          : mpl::true_
+        {};
+
+        /// INTERNAL ONLY
+        template<>
+        struct is_callable<by_value_generator>
+          : mpl::true_
+        {};
+
+        /// INTERNAL ONLY
+        template<typename First, typename Second>
+        struct is_callable<compose_generators<First, Second> >
+          : mpl::true_
+        {};
 
     }}
 

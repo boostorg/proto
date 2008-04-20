@@ -357,7 +357,7 @@
             struct impl : transform_impl<Expr, State, Data>
             {
                 typedef proto::expr<Tag, Args, Arity> result_type;
-                
+
                 result_type operator ()(
                     typename impl::expr_param   expr
                   , typename impl::state_param  state

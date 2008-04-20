@@ -226,7 +226,7 @@
                       , fun
                     >::type
                 result_type;
-                
+
                 /// Let \c seq be <tt>when\<_, Sequence\>()(expr, state, data)</tt>, let
                 /// \c state0 be <tt>when\<_, State0\>()(expr, state, data)</tt>, and
                 /// let \c fun(data) be an object such that <tt>fun(data)(expr, state)</tt>

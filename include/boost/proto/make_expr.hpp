@@ -402,7 +402,7 @@
                 BOOST_MPL_ASSERT_MSG((false), PROTO_DOMAIN_MISMATCH, (select_nth));
                 typedef default_domain type;
             };
-            
+
             template<typename Void = void>
             struct deduce_domain0
             {
@@ -809,7 +809,7 @@
             struct result
               : functional::make_expr<Tag, Domain>::template result<Sig>
             {};
-            
+
             #define M0(Z, N, DATA)                                                                  \
             template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                      \
             BOOST_PP_CAT(detail::implicit_expr_, N)<BOOST_PP_ENUM_PARAMS_Z(Z, N, A)>                \
@@ -1013,7 +1013,7 @@
         // - If S contains only default_domain, the deduced domain is
         //   default_domain.
         // - If S contains only X and default_domain, the deduced domain
-        //   is X. 
+        //   is X.
         // - If S contains different domains X and Y, neither of which is
         //   default_domain, it is an error.
         template<BOOST_PP_ENUM_PARAMS(N, typename A)>

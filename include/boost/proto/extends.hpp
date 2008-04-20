@@ -105,7 +105,7 @@ namespace boost { namespace proto
         /**/
 
     #define BOOST_PROTO_BASIC_EXTENDS(Expr, Derived, Domain)                                        \
-        Expr expr;                                                                                  \
+        Expr proto_expr_;                                                                           \
                                                                                                     \
         typedef typename Expr::proto_base_expr proto_base_expr;                                     \
         typedef Domain proto_domain;                                                                \
@@ -125,12 +125,12 @@ namespace boost { namespace proto
                                                                                                     \
         proto_base_expr &proto_base()                                                               \
         {                                                                                           \
-            return this->expr.proto_base();                                                         \
+            return this->proto_expr_.proto_base();                                                  \
         }                                                                                           \
                                                                                                     \
         proto_base_expr const &proto_base() const                                                   \
         {                                                                                           \
-            return this->expr.proto_base();                                                         \
+            return this->proto_expr_.proto_base();                                                  \
         }                                                                                           \
         /**/
 
@@ -374,15 +374,15 @@ namespace boost { namespace proto
     struct extends
     {
         extends()
-          : expr()
+          : proto_expr_()
         {}
 
         extends(extends const &that)
-          : expr(that.expr)
+          : proto_expr_(that.proto_expr_)
         {}
 
         extends(Expr const &expr_)
-          : expr(expr_)
+          : proto_expr_(expr_)
         {}
 
         BOOST_PROTO_BASIC_EXTENDS(Expr, Derived, Domain)
@@ -412,15 +412,15 @@ namespace boost { namespace proto
     struct extends<Expr, Derived, Domain, tag::terminal>
     {
         extends()
-          : expr()
+          : proto_expr_()
         {}
 
         extends(extends const &that)
-          : expr(that.expr)
+          : proto_expr_(that.proto_expr_)
         {}
 
         extends(Expr const &expr_)
-          : expr(expr_)
+          : proto_expr_(expr_)
         {}
 
         BOOST_PROTO_BASIC_EXTENDS(Expr, Derived, Domain)

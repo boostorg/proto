@@ -641,7 +641,7 @@
             struct if_ : transform<if_<If, Then, Else> >
             {
                 typedef if_ proto_base_expr;
-                
+
                 template<typename Expr, typename State, typename Data>
                 struct impl : transform_impl<Expr, State, Data>
                 {

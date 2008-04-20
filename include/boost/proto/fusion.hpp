@@ -398,7 +398,7 @@ namespace boost { namespace fusion
                     return proto::child_c<Iterator::index>(iter.expr);
                 }
             };
-            
+
             template<typename Iterator>
             struct apply<Iterator, 0>
             {

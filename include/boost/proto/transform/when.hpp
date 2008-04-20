@@ -162,7 +162,7 @@
                 which;
 
                 typedef typename which::template impl<Expr, State, Data>::result_type result_type;
-                
+
                 /// Evaluate <tt>R(A0,A1,...)</tt> as a transform either with
                 /// <tt>call\<\></tt> or with <tt>make\<\></tt> depending on
                 /// whether <tt>is_callable\<R\>::::value</tt> is \c true or
