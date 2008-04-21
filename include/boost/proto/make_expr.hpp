@@ -70,6 +70,11 @@
     #endif
     #include <boost/proto/detail/suffix.hpp>
 
+    #ifdef _MSC_VER
+    # pragma warning(push)
+    # pragma warning(disable: 4180) // qualifier applied to function type has no meaning; ignored
+    #endif
+
     namespace boost
     {
         /// INTERNAL ONLY
@@ -969,6 +974,10 @@
 
     }}
 
+    #ifdef _MSC_VER
+    # pragma warning(pop)
+    #endif
+    
     #undef BOOST_PROTO_AT
     #undef BOOST_PROTO_AT_TYPE
     #undef BOOST_PROTO_AS_CHILD_AT

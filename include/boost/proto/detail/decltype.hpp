@@ -48,14 +48,18 @@ namespace boost { namespace proto
 {
     namespace detail
     {
-        template<typename T> T make();
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename T>
+        T make();
 
+        ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename T>
         char check_reference(T &);
 
         template<typename T>
         char (&check_reference(T const &))[2];
 
+        ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename A0, typename A1>
         struct comma_result
         {
@@ -80,6 +84,7 @@ namespace boost { namespace proto
             typedef void type;
         };
 
+        ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename T, typename U = T>
         struct result_of_fixup
           : mpl::if_c<is_function<T>::value, T *, U>
@@ -87,6 +92,11 @@ namespace boost { namespace proto
 
         template<typename T, typename U>
         struct result_of_fixup<T &, U>
+          : result_of_fixup<T, T>
+        {};
+
+        template<typename T, typename U>
+        struct result_of_fixup<T const &, U>
           : result_of_fixup<T, T>
         {};
 
