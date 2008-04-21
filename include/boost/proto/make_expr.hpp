@@ -376,16 +376,12 @@
             struct protoify_<T &, Domain>
             {
                 typedef
-                    typename boost::unwrap_reference<T>::type
-                unref_type;
-
-                typedef
-                    typename proto::result_of::as_child<unref_type, Domain>::type
+                    typename proto::result_of::as_child<T, Domain>::type
                 type;
 
                 static type call(T &t)
                 {
-                    return functional::as_child<Domain>()(static_cast<unref_type &>(t));
+                    return functional::as_child<Domain>()(t);
                 }
             };
 

@@ -263,7 +263,7 @@ void test_make_expr_transform2_test(Expr const &expr)
     void const *addr1 = boost::addressof(proto::child_c<1>(proto::child_c<0>(expr)));
     void const *addr2 = boost::addressof(proto::child_c<1>(proto::child_c<0>(Convert()(expr))));
     BOOST_CHECK_EQUAL(addr1, addr2);
-    
+
     BOOST_CHECK_EQUAL(1, proto::value(proto::child_c<1>(proto::child_c<0>(expr))));
     BOOST_CHECK_EQUAL(1, proto::value(proto::child_c<1>(proto::child_c<0>(Convert()(expr)))));
 }

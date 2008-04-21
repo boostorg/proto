@@ -439,7 +439,7 @@ namespace boost { namespace spirit2
                   , Expr
                 >::type
             result_type;
-            
+
             result_type operator ()(
                 typename impl::expr_param expr
               , typename impl::state_param state

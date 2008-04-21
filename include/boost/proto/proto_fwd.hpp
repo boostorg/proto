@@ -695,6 +695,7 @@ namespace boost { namespace proto
     template<typename T, typename Void = void>
     struct is_transform;
 
+    #define BOOST_PROTO_UNEXPR() typedef int proto_is_expr_;
     #define BOOST_PROTO_CALLABLE() typedef void proto_is_callable_;
     #define BOOST_PROTO_TRANSFORM() typedef void proto_is_transform_;
 

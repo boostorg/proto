@@ -81,7 +81,7 @@ struct unary_arity
 
         /*<< Apply `CalculatorArity` to find the arity of the child. >>*/
         typedef typename boost::result_of<CalculatorArity(child_expr, State, Data)>::type result_type;
-        
+
         /*<< The `unary_arity` transform doesn't have an interesting
         runtime counterpart, so just return a default-constructed object
         of the correct type. >>*/

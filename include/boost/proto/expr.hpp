@@ -106,6 +106,23 @@
 
         #undef BOOST_PROTO_CHILD
         #undef BOOST_PROTO_VOID
+
+        /// \brief Lets you inherit the interface of an expression
+        /// while hiding from Proto the fact that the type is a Proto
+        /// expression.
+        template<typename Expr>
+        struct unexpr
+          : Expr
+        {
+            BOOST_PROTO_UNEXPR()
+
+            explicit unexpr(Expr const &expr)
+              : Expr(expr)
+            {}
+            
+            using Expr::operator =;
+        };
+
     }}
 
     #if defined(_MSC_VER) && (_MSC_VER >= 1020)
