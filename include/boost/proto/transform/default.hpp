@@ -28,33 +28,6 @@
 
     namespace boost { namespace proto
     {
-        namespace detail
-        {
-            template<typename T>
-            T &deref(T &t)
-            {
-                return t;
-            }
-
-            template<typename T>
-            T const &deref(T const &t)
-            {
-                return t;
-            }
-
-            template<typename T>
-            T &deref(T *&t)
-            {
-                return *t;
-            }
-
-            template<typename T>
-            T &deref(T *const &t)
-            {
-                return *t;
-            }
-        }
-
         template<typename Grammar>
         struct _default
           : transform<_default<Grammar> >
@@ -67,7 +40,7 @@
               : _value::impl<Expr, State, Data>
             {};
 
-            #define BOOST_PROTO_UNARY_OP_RESULT(OP, TAG)                                            \
+            #define BOOST_PROTO_UNARY_OP_RESULT(OP, TAG, MAKE)                                      \
             template<typename Expr, typename State, typename Data>                                  \
             struct impl2<Expr, State, Data, TAG, 1>                                                 \
               : transform_impl<Expr, State, Data>                                                   \
@@ -76,7 +49,7 @@
                 typedef typename result_of::child_c<Expr, 0>::type e0;                              \
                 typedef typename Grammar::template impl<e0, State, Data>::result_type r0;           \
             public:                                                                                 \
-                BOOST_PROTO_DECLTYPE_(OP proto::detail::make<r0>(), result_type)                    \
+                BOOST_PROTO_DECLTYPE_(OP proto::detail::MAKE<r0>(), result_type)                    \
                 result_type operator ()(                                                            \
                     typename impl2::expr_param expr                                                 \
                   , typename impl2::state_param state                                               \
@@ -89,7 +62,7 @@
             };                                                                                      \
             /**/
 
-            #define BOOST_PROTO_BINARY_OP_RESULT(OP, TAG)                                           \
+            #define BOOST_PROTO_BINARY_OP_RESULT(OP, TAG, LMAKE, RMAKE)                             \
             template<typename Expr, typename State, typename Data>                                  \
             struct impl2<Expr, State, Data, TAG, 2>                                                 \
               : transform_impl<Expr, State, Data>                                                   \
@@ -101,7 +74,7 @@
                 typedef typename Grammar::template impl<e1, State, Data>::result_type r1;           \
             public:                                                                                 \
                 BOOST_PROTO_DECLTYPE_(                                                              \
-                    proto::detail::make<r0>() OP proto::detail::make<r1>()                          \
+                    proto::detail::LMAKE<r0>() OP proto::detail::RMAKE<r1>()                        \
                   , result_type                                                                     \
                 )                                                                                   \
                 result_type operator ()(                                                            \
@@ -118,46 +91,46 @@
             };                                                                                      \
             /**/
 
-            BOOST_PROTO_UNARY_OP_RESULT(+, tag::unary_plus)
-            BOOST_PROTO_UNARY_OP_RESULT(-, tag::negate)
-            BOOST_PROTO_UNARY_OP_RESULT(*, tag::dereference)
-            BOOST_PROTO_UNARY_OP_RESULT(~, tag::complement)
-            BOOST_PROTO_UNARY_OP_RESULT(&, tag::address_of)
-            BOOST_PROTO_UNARY_OP_RESULT(!, tag::logical_not)
-            BOOST_PROTO_UNARY_OP_RESULT(++, tag::pre_inc)
-            BOOST_PROTO_UNARY_OP_RESULT(--, tag::pre_dec)
+            BOOST_PROTO_UNARY_OP_RESULT(+, tag::unary_plus, make)
+            BOOST_PROTO_UNARY_OP_RESULT(-, tag::negate, make)
+            BOOST_PROTO_UNARY_OP_RESULT(*, tag::dereference, make)
+            BOOST_PROTO_UNARY_OP_RESULT(~, tag::complement, make)
+            BOOST_PROTO_UNARY_OP_RESULT(&, tag::address_of, make)
+            BOOST_PROTO_UNARY_OP_RESULT(!, tag::logical_not, make)
+            BOOST_PROTO_UNARY_OP_RESULT(++, tag::pre_inc, make_mutable)
+            BOOST_PROTO_UNARY_OP_RESULT(--, tag::pre_dec, make_mutable)
 
-            BOOST_PROTO_BINARY_OP_RESULT(<<, tag::shift_left)
-            BOOST_PROTO_BINARY_OP_RESULT(>>, tag::shift_right)
-            BOOST_PROTO_BINARY_OP_RESULT(*, tag::multiplies)
-            BOOST_PROTO_BINARY_OP_RESULT(/, tag::divides)
-            BOOST_PROTO_BINARY_OP_RESULT(%, tag::modulus)
-            BOOST_PROTO_BINARY_OP_RESULT(+, tag::plus)
-            BOOST_PROTO_BINARY_OP_RESULT(-, tag::minus)
-            BOOST_PROTO_BINARY_OP_RESULT(<, tag::less)
-            BOOST_PROTO_BINARY_OP_RESULT(>, tag::greater)
-            BOOST_PROTO_BINARY_OP_RESULT(<=, tag::less_equal)
-            BOOST_PROTO_BINARY_OP_RESULT(>=, tag::greater_equal)
-            BOOST_PROTO_BINARY_OP_RESULT(==, tag::equal_to)
-            BOOST_PROTO_BINARY_OP_RESULT(!=, tag::not_equal_to)
-            BOOST_PROTO_BINARY_OP_RESULT(||, tag::logical_or)
-            BOOST_PROTO_BINARY_OP_RESULT(&&, tag::logical_and)
-            BOOST_PROTO_BINARY_OP_RESULT(&, tag::bitwise_and)
-            BOOST_PROTO_BINARY_OP_RESULT(|, tag::bitwise_or)
-            BOOST_PROTO_BINARY_OP_RESULT(^, tag::bitwise_xor)
-            BOOST_PROTO_BINARY_OP_RESULT(->*, tag::mem_ptr)
+            BOOST_PROTO_BINARY_OP_RESULT(<<, tag::shift_left, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(>>, tag::shift_right, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(*, tag::multiplies, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(/, tag::divides, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(%, tag::modulus, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(+, tag::plus, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(-, tag::minus, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(<, tag::less, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(>, tag::greater, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(<=, tag::less_equal, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(>=, tag::greater_equal, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(==, tag::equal_to, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(!=, tag::not_equal_to, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(||, tag::logical_or, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(&&, tag::logical_and, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(&, tag::bitwise_and, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(|, tag::bitwise_or, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(^, tag::bitwise_xor, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(->*, tag::mem_ptr, make_mutable, make)
 
-            BOOST_PROTO_BINARY_OP_RESULT(=, tag::assign)
-            BOOST_PROTO_BINARY_OP_RESULT(<<=, tag::shift_left_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(>>=, tag::shift_right_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(*=, tag::multiplies_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(/=, tag::divides_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(%=, tag::modulus_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(+=, tag::plus_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(-=, tag::minus_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(&=, tag::bitwise_and_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(|=, tag::bitwise_or_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(^=, tag::bitwise_xor_assign)
+            BOOST_PROTO_BINARY_OP_RESULT(=, tag::assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(<<=, tag::shift_left_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(>>=, tag::shift_right_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(*=, tag::multiplies_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(/=, tag::divides_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(%=, tag::modulus_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(+=, tag::plus_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(-=, tag::minus_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(&=, tag::bitwise_and_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(|=, tag::bitwise_or_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(^=, tag::bitwise_xor_assign, make_mutable, make)
 
             #undef BOOST_PROTO_UNARY_OP_RESULT
             #undef BOOST_PROTO_BINARY_OP_RESULT
@@ -170,7 +143,7 @@
                 typedef typename result_of::child_c<Expr, 0>::type e0;
                 typedef typename Grammar::template impl<e0, State, Data>::result_type r0;
             public:
-                BOOST_PROTO_DECLTYPE_(proto::detail::make<r0>() ++, result_type)
+                BOOST_PROTO_DECLTYPE_(proto::detail::make_mutable<r0>() ++, result_type)
                 result_type operator ()(
                     typename impl2::expr_param expr
                   , typename impl2::state_param state
@@ -190,7 +163,7 @@
                 typedef typename result_of::child_c<Expr, 0>::type e0;
                 typedef typename Grammar::template impl<e0, State, Data>::result_type r0;
             public:
-                BOOST_PROTO_DECLTYPE_(proto::detail::make<r0>() --, result_type)
+                BOOST_PROTO_DECLTYPE_(proto::detail::make_mutable<r0>() --, result_type)
                 result_type operator ()(
                     typename impl2::expr_param expr
                   , typename impl2::state_param state

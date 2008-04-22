@@ -50,7 +50,30 @@ namespace boost { namespace proto
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename T>
+        struct as_mutable
+        {
+            typedef T &type;
+        };
+
+        template<typename T>
+        struct as_mutable<T &>
+        {
+            typedef T &type;
+        };
+
+        template<typename T>
+        struct as_mutable<T const &>
+        {
+            typedef T &type;
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename T>
         T make();
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename T>
+        typename as_mutable<T>::type make_mutable();
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename T>
@@ -58,6 +81,31 @@ namespace boost { namespace proto
 
         template<typename T>
         char (&check_reference(T const &))[2];
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename T>
+        T &deref(T &t)
+        {
+            return t;
+        }
+
+        template<typename T>
+        T const &deref(T const &t)
+        {
+            return t;
+        }
+
+        template<typename T>
+        T &deref(T *&t)
+        {
+            return *t;
+        }
+
+        template<typename T>
+        T &deref(T *const &t)
+        {
+            return *t;
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename A0, typename A1>

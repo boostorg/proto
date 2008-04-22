@@ -20,6 +20,7 @@
     #include <boost/type_traits/is_const.hpp>
     #include <boost/type_traits/is_function.hpp>
     #include <boost/type_traits/remove_reference.hpp>
+    #include <boost/type_traits/is_member_pointer.hpp>
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/tags.hpp>
     #include <boost/proto/eval.hpp>
@@ -46,7 +47,7 @@
 
             /// INTERNAL ONLY
             ///
-        #define BOOST_PROTO_UNARY_OP_RESULT(OP, TAG)                                                \
+        #define BOOST_PROTO_UNARY_OP_RESULT(OP, TAG, MAKE)                                          \
             template<typename Expr, typename Context>                                               \
             struct default_eval<Expr, Context, TAG, 1>                                              \
             {                                                                                       \
@@ -54,7 +55,7 @@
                 typedef typename proto::result_of::child_c<Expr, 0>::type e0;                       \
                 typedef typename proto::result_of::eval<UNREF(e0), Context>::type r0;               \
             public:                                                                                 \
-                BOOST_PROTO_DECLTYPE_(OP proto::detail::make<r0>(), result_type)                    \
+                BOOST_PROTO_DECLTYPE_(OP proto::detail::MAKE<r0>(), result_type)                    \
                 result_type operator ()(Expr &expr, Context &ctx) const                             \
                 {                                                                                   \
                     return OP proto::eval(proto::child_c<0>(expr), ctx);                            \
@@ -64,7 +65,7 @@
 
             /// INTERNAL ONLY
             ///
-        #define BOOST_PROTO_BINARY_OP_RESULT(OP, TAG)                                               \
+        #define BOOST_PROTO_BINARY_OP_RESULT(OP, TAG, LMAKE, RMAKE)                                 \
             template<typename Expr, typename Context>                                               \
             struct default_eval<Expr, Context, TAG, 2>                                              \
             {                                                                                       \
@@ -75,7 +76,7 @@
                 typedef typename proto::result_of::eval<UNREF(e1), Context>::type r1;               \
             public:                                                                                 \
                 BOOST_PROTO_DECLTYPE_(                                                              \
-                    proto::detail::make<r0>() OP proto::detail::make<r1>()                          \
+                    proto::detail::LMAKE<r0>() OP proto::detail::RMAKE<r1>()                        \
                   , result_type                                                                     \
                 )                                                                                   \
                 result_type operator ()(Expr &expr, Context &ctx) const                             \
@@ -88,46 +89,46 @@
             };                                                                                      \
             /**/
 
-            BOOST_PROTO_UNARY_OP_RESULT(+, proto::tag::unary_plus)
-            BOOST_PROTO_UNARY_OP_RESULT(-, proto::tag::negate)
-            BOOST_PROTO_UNARY_OP_RESULT(*, proto::tag::dereference)
-            BOOST_PROTO_UNARY_OP_RESULT(~, proto::tag::complement)
-            BOOST_PROTO_UNARY_OP_RESULT(&, proto::tag::address_of)
-            BOOST_PROTO_UNARY_OP_RESULT(!, proto::tag::logical_not)
-            BOOST_PROTO_UNARY_OP_RESULT(++, proto::tag::pre_inc)
-            BOOST_PROTO_UNARY_OP_RESULT(--, proto::tag::pre_dec)
+            BOOST_PROTO_UNARY_OP_RESULT(+, proto::tag::unary_plus, make)
+            BOOST_PROTO_UNARY_OP_RESULT(-, proto::tag::negate, make)
+            BOOST_PROTO_UNARY_OP_RESULT(*, proto::tag::dereference, make)
+            BOOST_PROTO_UNARY_OP_RESULT(~, proto::tag::complement, make)
+            BOOST_PROTO_UNARY_OP_RESULT(&, proto::tag::address_of, make)
+            BOOST_PROTO_UNARY_OP_RESULT(!, proto::tag::logical_not, make)
+            BOOST_PROTO_UNARY_OP_RESULT(++, proto::tag::pre_inc, make_mutable)
+            BOOST_PROTO_UNARY_OP_RESULT(--, proto::tag::pre_dec, make_mutable)
 
-            BOOST_PROTO_BINARY_OP_RESULT(<<, proto::tag::shift_left)
-            BOOST_PROTO_BINARY_OP_RESULT(>>, proto::tag::shift_right)
-            BOOST_PROTO_BINARY_OP_RESULT(*, proto::tag::multiplies)
-            BOOST_PROTO_BINARY_OP_RESULT(/, proto::tag::divides)
-            BOOST_PROTO_BINARY_OP_RESULT(%, proto::tag::modulus)
-            BOOST_PROTO_BINARY_OP_RESULT(+, proto::tag::plus)
-            BOOST_PROTO_BINARY_OP_RESULT(-, proto::tag::minus)
-            BOOST_PROTO_BINARY_OP_RESULT(<, proto::tag::less)
-            BOOST_PROTO_BINARY_OP_RESULT(>, proto::tag::greater)
-            BOOST_PROTO_BINARY_OP_RESULT(<=, proto::tag::less_equal)
-            BOOST_PROTO_BINARY_OP_RESULT(>=, proto::tag::greater_equal)
-            BOOST_PROTO_BINARY_OP_RESULT(==, proto::tag::equal_to)
-            BOOST_PROTO_BINARY_OP_RESULT(!=, proto::tag::not_equal_to)
-            BOOST_PROTO_BINARY_OP_RESULT(||, proto::tag::logical_or)
-            BOOST_PROTO_BINARY_OP_RESULT(&&, proto::tag::logical_and)
-            BOOST_PROTO_BINARY_OP_RESULT(&, proto::tag::bitwise_and)
-            BOOST_PROTO_BINARY_OP_RESULT(|, proto::tag::bitwise_or)
-            BOOST_PROTO_BINARY_OP_RESULT(^, proto::tag::bitwise_xor)
-            BOOST_PROTO_BINARY_OP_RESULT(->*, proto::tag::mem_ptr)
+            BOOST_PROTO_BINARY_OP_RESULT(<<, proto::tag::shift_left, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(>>, proto::tag::shift_right, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(*, proto::tag::multiplies, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(/, proto::tag::divides, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(%, proto::tag::modulus, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(+, proto::tag::plus, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(-, proto::tag::minus, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(<, proto::tag::less, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(>, proto::tag::greater, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(<=, proto::tag::less_equal, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(>=, proto::tag::greater_equal, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(==, proto::tag::equal_to, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(!=, proto::tag::not_equal_to, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(||, proto::tag::logical_or, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(&&, proto::tag::logical_and, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(&, proto::tag::bitwise_and, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(|, proto::tag::bitwise_or, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(^, proto::tag::bitwise_xor, make, make)
+            BOOST_PROTO_BINARY_OP_RESULT(->*, proto::tag::mem_ptr, make_mutable, make)
 
-            BOOST_PROTO_BINARY_OP_RESULT(=, proto::tag::assign)
-            BOOST_PROTO_BINARY_OP_RESULT(<<=, proto::tag::shift_left_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(>>=, proto::tag::shift_right_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(*=, proto::tag::multiplies_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(/=, proto::tag::divides_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(%=, proto::tag::modulus_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(+=, proto::tag::plus_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(-=, proto::tag::minus_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(&=, proto::tag::bitwise_and_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(|=, proto::tag::bitwise_or_assign)
-            BOOST_PROTO_BINARY_OP_RESULT(^=, proto::tag::bitwise_xor_assign)
+            BOOST_PROTO_BINARY_OP_RESULT(=, proto::tag::assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(<<=, proto::tag::shift_left_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(>>=, proto::tag::shift_right_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(*=, proto::tag::multiplies_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(/=, proto::tag::divides_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(%=, proto::tag::modulus_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(+=, proto::tag::plus_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(-=, proto::tag::minus_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(&=, proto::tag::bitwise_and_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(|=, proto::tag::bitwise_or_assign, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(^=, proto::tag::bitwise_xor_assign, make_mutable, make)
 
         #undef BOOST_PROTO_UNARY_OP_RESULT
         #undef BOOST_PROTO_BINARY_OP_RESULT
@@ -153,7 +154,7 @@
                 typedef typename proto::result_of::child_c<Expr, 0>::type e0;
                 typedef typename proto::result_of::eval<UNREF(e0), Context>::type r0;
             public:
-                BOOST_PROTO_DECLTYPE_(proto::detail::make<r0>() ++, result_type)
+                BOOST_PROTO_DECLTYPE_(proto::detail::make_mutable<r0>() ++, result_type)
                 result_type operator ()(Expr &expr, Context &ctx) const
                 {
                     return proto::eval(proto::child_c<0>(expr), ctx) ++;
@@ -168,7 +169,7 @@
                 typedef typename proto::result_of::child_c<Expr, 0>::type e0;
                 typedef typename proto::result_of::eval<UNREF(e0), Context>::type r0;
             public:
-                BOOST_PROTO_DECLTYPE_(proto::detail::make<r0>() --, result_type)
+                BOOST_PROTO_DECLTYPE_(proto::detail::make_mutable<r0>() --, result_type)
                 result_type operator ()(Expr &expr, Context &ctx) const
                 {
                     return proto::eval(proto::child_c<0>(expr), ctx) --;
@@ -288,10 +289,31 @@
                 >::type
             result_type;
 
+            #if N == 1
             result_type operator ()(Expr &expr, Context &context) const
             {
                 return EVAL(~, 0, expr)(BOOST_PP_ENUM_SHIFTED(N, EVAL, expr));
             }
+            #else
+            result_type operator ()(Expr &expr, Context &context) const
+            {
+                return this->invoke(expr, context, is_member_pointer<function_type>());
+            }
+
+            result_type invoke(Expr &expr, Context &context, mpl::false_) const
+            {
+                return EVAL(~, 0, expr)(BOOST_PP_ENUM_SHIFTED(N, EVAL, expr));
+            }
+
+            result_type invoke(Expr &expr, Context &context, mpl::true_) const
+            {
+                #define M0(Z, M, expr) BOOST_PP_COMMA_IF(BOOST_PP_SUB(M, 2)) EVAL(Z, M, expr)
+                return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr))(
+                    BOOST_PP_REPEAT_FROM_TO(2, N, M0, expr)
+                );
+                #undef M0
+            }
+            #endif
         };
 
     #undef N
