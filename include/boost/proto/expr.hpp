@@ -193,7 +193,7 @@
             /// arguments.
             ///
             template<BOOST_PP_ENUM_PARAMS(ARG_COUNT, typename A)>
-            static expr make(BOOST_PP_ENUM_BINARY_PARAMS(ARG_COUNT, A, const &a))
+            static expr const make(BOOST_PP_ENUM_BINARY_PARAMS(ARG_COUNT, A, const &a))
             {
                 expr that = {BOOST_PP_ENUM_PARAMS(ARG_COUNT, a)};
                 return that;
@@ -203,7 +203,7 @@
             /// \overload
             ///
             template<typename A0>
-            static expr make(A0 &a0)
+            static expr const make(A0 &a0)
             {
                 expr that = {a0};
                 return that;
@@ -212,7 +212,7 @@
             /// \overload
             ///
             template<typename A0, std::size_t N>
-            static expr make(A0 (&a0)[N], typename detail::if_is_array<proto_child0, N>::type = 0)
+            static expr const make(A0 (&a0)[N], typename detail::if_is_array<proto_child0, N>::type = 0)
             {
                 expr that;
                 detail::checked_copy(a0, that.child0);
@@ -222,7 +222,7 @@
             /// \overload
             ///
             template<typename A0, std::size_t N>
-            static expr make(A0 const (&a0)[N], typename detail::if_is_array<proto_child0, N>::type = 0)
+            static expr const make(A0 const (&a0)[N], typename detail::if_is_array<proto_child0, N>::type = 0)
             {
                 expr that;
                 detail::checked_copy(a0, that.child0);
