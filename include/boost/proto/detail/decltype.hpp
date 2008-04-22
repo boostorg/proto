@@ -133,6 +133,18 @@ namespace boost { namespace proto
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename T>
+        struct result_of_
+          : boost::result_of<T>
+        {};
+
+        template<typename T, typename U, typename V>
+        struct result_of_<T U::*(V)>
+        {
+            typedef T type;
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename T, typename U = T>
         struct result_of_fixup
           : mpl::if_c<is_function<T>::value, T *, U>

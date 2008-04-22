@@ -21,6 +21,8 @@
     #include <boost/type_traits/is_function.hpp>
     #include <boost/type_traits/remove_reference.hpp>
     #include <boost/type_traits/is_member_pointer.hpp>
+    #include <boost/type_traits/is_member_object_pointer.hpp>
+    #include <boost/type_traits/is_member_function_pointer.hpp>
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/tags.hpp>
     #include <boost/proto/eval.hpp>
@@ -239,14 +241,73 @@
             // Handle function specially
             #define EVAL_TYPE(Z, N, DATA)                                                           \
                 typename proto::result_of::eval<                                                    \
-                    typename remove_reference<typename proto::result_of::child_c<DATA, N>::type>::type\
+                    typename remove_reference<                                                      \
+                        typename proto::result_of::child_c<DATA, N>::type                           \
+                    >::type                                                                         \
                   , Context                                                                         \
-                >::type
+                >::type                                                                             \
+                /**/
 
             #define EVAL(Z, N, DATA)                                                                \
-                proto::eval(proto::child_c<N>(DATA), context)
+                proto::eval(proto::child_c<N>(DATA), context)                                       \
+                /**/
 
-            #define BOOST_PP_ITERATION_PARAMS_1 (3, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/context/default.hpp>))
+            template<typename Expr, typename Context>
+            struct default_eval<Expr, Context, proto::tag::function, 1>
+            {
+                typedef
+                    typename proto::detail::result_of_fixup<EVAL_TYPE(~, 0, Expr)>::type
+                function_type;
+
+                typedef
+                    typename boost::result_of<function_type()>::type
+                result_type;
+
+                result_type operator ()(Expr &expr, Context &context) const
+                {
+                    return EVAL(~, 0, expr)();
+                }
+            };
+
+            template<typename Expr, typename Context>
+            struct default_eval<Expr, Context, proto::tag::function, 2>
+            {
+                typedef
+                    typename proto::detail::result_of_fixup<EVAL_TYPE(~, 0, Expr)>::type
+                function_type;
+
+                typedef
+                    typename detail::result_of_<function_type(EVAL_TYPE(~, 1, Expr))>::type
+                result_type;
+
+                result_type operator ()(Expr &expr, Context &context) const
+                {
+                    return this->invoke(
+                        expr
+                      , context
+                      , is_member_function_pointer<function_type>()
+                      , is_member_object_pointer<function_type>()
+                    );
+                }
+
+            private:
+                result_type invoke(Expr &expr, Context &context, mpl::false_, mpl::false_) const
+                {
+                    return EVAL(~, 0, expr)(EVAL(~, 1, expr));
+                }
+
+                result_type invoke(Expr &expr, Context &context, mpl::true_, mpl::false_) const
+                {
+                    return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr))();
+                }
+
+                result_type invoke(Expr &expr, Context &context, mpl::false_, mpl::true_) const
+                {
+                    return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr));
+                }
+            };
+
+            #define BOOST_PP_ITERATION_PARAMS_1 (3, (3, BOOST_PROTO_MAX_ARITY, <boost/proto/context/default.hpp>))
             #include BOOST_PP_ITERATE()
 
             #undef EVAL_TYPE
@@ -289,17 +350,12 @@
                 >::type
             result_type;
 
-            #if N == 1
             result_type operator ()(Expr &expr, Context &context) const
             {
-                return EVAL(~, 0, expr)(BOOST_PP_ENUM_SHIFTED(N, EVAL, expr));
-            }
-            #else
-            result_type operator ()(Expr &expr, Context &context) const
-            {
-                return this->invoke(expr, context, is_member_pointer<function_type>());
+                return this->invoke(expr, context, is_member_function_pointer<function_type>());
             }
 
+        private:
             result_type invoke(Expr &expr, Context &context, mpl::false_) const
             {
                 return EVAL(~, 0, expr)(BOOST_PP_ENUM_SHIFTED(N, EVAL, expr));
@@ -313,7 +369,6 @@
                 );
                 #undef M0
             }
-            #endif
         };
 
     #undef N

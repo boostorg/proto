@@ -19,6 +19,8 @@
     #include <boost/ref.hpp>
     #include <boost/utility/enable_if.hpp>
     #include <boost/type_traits/is_member_pointer.hpp>
+    #include <boost/type_traits/is_member_object_pointer.hpp>
+    #include <boost/type_traits/is_member_function_pointer.hpp>
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/traits.hpp>
     #include <boost/proto/transform/impl.hpp>
@@ -274,7 +276,96 @@
                 )                                                                                   \
                 /**/
 
-            #define BOOST_PP_ITERATION_PARAMS_1 (3, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/transform/default.hpp>))
+            template<typename Expr, typename State, typename Data>
+            struct impl2<Expr, State, Data, tag::function, 1>
+              : transform_impl<Expr, State, Data>
+            {
+                EVAL_TYPE(~, 0, Expr)
+
+                typedef
+                    typename proto::detail::result_of_fixup<r0>::type
+                function_type;
+
+                typedef
+                    typename boost::result_of<function_type()>::type
+                result_type;
+
+                result_type operator ()(
+                    typename impl2::expr_param expr
+                  , typename impl2::state_param state
+                  , typename impl2::data_param data
+                ) const
+                {
+                    return EVAL(~, 0, expr)();
+                }
+            };
+
+            template<typename Expr, typename State, typename Data>
+            struct impl2<Expr, State, Data, tag::function, 2>
+              : transform_impl<Expr, State, Data>
+            {
+                EVAL_TYPE(~, 0, Expr)
+                EVAL_TYPE(~, 1, Expr)
+
+                typedef
+                    typename proto::detail::result_of_fixup<r0>::type
+                function_type;
+
+                typedef
+                    typename detail::result_of_<function_type(r1)>::type
+                result_type;
+
+                result_type operator ()(
+                    typename impl2::expr_param expr
+                  , typename impl2::state_param state
+                  , typename impl2::data_param data
+                ) const
+                {
+                    return this->invoke(
+                        expr
+                      , state
+                      , data
+                      , is_member_function_pointer<function_type>()
+                      , is_member_object_pointer<function_type>()
+                    );
+                }
+
+            private:
+                result_type invoke(
+                    typename impl2::expr_param expr
+                  , typename impl2::state_param state
+                  , typename impl2::data_param data
+                  , mpl::false_
+                  , mpl::false_
+                ) const
+                {
+                    return EVAL(~, 0, expr)(EVAL(~, 1, expr));
+                }
+
+                result_type invoke(
+                    typename impl2::expr_param expr
+                  , typename impl2::state_param state
+                  , typename impl2::data_param data
+                  , mpl::true_
+                  , mpl::false_
+                ) const
+                {
+                    return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr))();
+                }
+
+                result_type invoke(
+                    typename impl2::expr_param expr
+                  , typename impl2::state_param state
+                  , typename impl2::data_param data
+                  , mpl::false_
+                  , mpl::true_
+                ) const
+                {
+                    return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr));
+                }
+            };
+
+            #define BOOST_PP_ITERATION_PARAMS_1 (3, (3, BOOST_PROTO_MAX_ARITY, <boost/proto/transform/default.hpp>))
             #include BOOST_PP_ITERATE()
 
             #undef EVAL_TYPE
@@ -321,25 +412,16 @@
                 >::type
             result_type;
 
-            #if N == 1
             result_type operator ()(
                 typename impl2::expr_param expr
               , typename impl2::state_param state
               , typename impl2::data_param data
             ) const
             {
-                return EVAL(~, 0, expr)(BOOST_PP_ENUM_SHIFTED(N, EVAL, expr));
-            }
-            #else
-            result_type operator ()(
-                typename impl2::expr_param expr
-              , typename impl2::state_param state
-              , typename impl2::data_param data
-            ) const
-            {
-                return this->invoke(expr, state, data, is_member_pointer<function_type>());
+                return this->invoke(expr, state, data, is_member_function_pointer<function_type>());
             }
 
+        private:
             result_type invoke(
                 typename impl2::expr_param expr
               , typename impl2::state_param state
@@ -363,7 +445,6 @@
                 );
                 #undef M0
             }
-            #endif
         };
 
     #undef N
