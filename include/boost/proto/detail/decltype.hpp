@@ -12,9 +12,13 @@
 #include <boost/proto/detail/prefix.hpp> // must be first include
 #include <boost/config.hpp>
 #include <boost/preprocessor/cat.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/repetition/enum_binary_params.hpp>
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/type_traits/is_function.hpp>
 #include <boost/typeof/typeof.hpp>
+#include <boost/utility/result_of.hpp>
 #include <boost/proto/detail/suffix.hpp> // must be last include
 
 // If we're generating doxygen documentation, hide all the nasty
@@ -186,6 +190,37 @@ namespace boost { namespace proto
         //BOOST_MPL_ASSERT((is_same<void(*)(),  result_of_fixup<void(* const)()>::type>));
         //BOOST_MPL_ASSERT((is_same<void(*)(),  result_of_fixup<void(* const &)()>::type>));
         //BOOST_MPL_ASSERT((is_same<void(*)(),  result_of_fixup<void(&)()>::type>));
+
+        template<typename T, typename PMF>
+        struct memfun
+        {
+            typedef typename remove_const<typename remove_reference<PMF>::type>::type pmf_type;
+            typedef typename boost::result_of<pmf_type(T)>::type result_type;
+
+            memfun(T t, PMF pmf)
+              : obj(t)
+              , pmf(pmf)
+            {}
+
+            result_type operator()() const
+            {
+                return (detail::deref(obj).*pmf)();
+            }
+
+            #define M0(Z, N, DATA)                                                                  \
+            template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                      \
+            result_type operator()(BOOST_PP_ENUM_BINARY_PARAMS_Z(Z, N, A, const &a)) const          \
+            {                                                                                       \
+                return (detail::deref(obj).*pmf)(BOOST_PP_ENUM_PARAMS_Z(Z, N, a));                  \
+            }                                                                                       \
+            /**/
+            BOOST_PP_REPEAT_FROM_TO(1, BOOST_PROTO_MAX_ARITY, M0, ~)
+            #undef M0
+
+        private:
+            T obj;
+            PMF pmf;            
+        };
 
     } // namespace detail
 }}

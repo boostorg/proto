@@ -118,7 +118,6 @@
             BOOST_PROTO_BINARY_OP_RESULT(&, proto::tag::bitwise_and, make, make)
             BOOST_PROTO_BINARY_OP_RESULT(|, proto::tag::bitwise_or, make, make)
             BOOST_PROTO_BINARY_OP_RESULT(^, proto::tag::bitwise_xor, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(->*, proto::tag::mem_ptr, make_mutable, make)
 
             BOOST_PROTO_BINARY_OP_RESULT(=, proto::tag::assign, make_mutable, make)
             BOOST_PROTO_BINARY_OP_RESULT(<<=, proto::tag::shift_left_assign, make_mutable, make)
@@ -134,6 +133,63 @@
 
         #undef BOOST_PROTO_UNARY_OP_RESULT
         #undef BOOST_PROTO_BINARY_OP_RESULT
+
+            /// INTERNAL ONLY
+            template<typename Expr, typename Context>
+            struct is_member_function_eval
+            {
+                typedef typename proto::result_of::child_c<Expr, 1>::type e1;
+                typedef typename proto::result_of::eval<UNREF(e1), Context>::type r1;
+                typedef typename remove_const<typename remove_reference<r1>::type>::type uncvref_r1;
+                typedef typename is_member_function_pointer<uncvref_r1>::type type;
+                BOOST_STATIC_CONSTANT(bool, value = type::value);
+            };
+
+            /// INTERNAL ONLY
+            template<typename Expr, typename Context, bool IsMemFunCall>
+            struct memfun_eval
+            {
+            private:
+                typedef typename result_of::child_c<Expr, 0>::type e0;
+                typedef typename result_of::child_c<Expr, 1>::type e1;
+                typedef typename proto::result_of::eval<UNREF(e0), Context>::type r0;
+                typedef typename proto::result_of::eval<UNREF(e1), Context>::type r1;
+            public:
+                BOOST_PROTO_DECLTYPE_(
+                    proto::detail::make_mutable<r0>() ->* proto::detail::make<r1>()
+                  , result_type
+                )
+                result_type operator ()(Expr &expr, Context &ctx) const
+                {
+                    return proto::eval(proto::child_c<0>(expr), ctx)
+                       ->* proto::eval(proto::child_c<1>(expr), ctx);
+                }
+            };
+
+            /// INTERNAL ONLY
+            template<typename Expr, typename Context>
+            struct memfun_eval<Expr, Context, true>
+            {
+            private:
+                typedef typename result_of::child_c<Expr, 0>::type e0;
+                typedef typename result_of::child_c<Expr, 1>::type e1;
+                typedef typename proto::result_of::eval<UNREF(e0), Context>::type r0;
+                typedef typename proto::result_of::eval<UNREF(e1), Context>::type r1;
+            public:
+                typedef detail::memfun<r0, r1> result_type;
+                result_type const operator ()(Expr &expr, Context &ctx) const
+                {
+                    return detail::memfun<r0, r1>(
+                        proto::eval(proto::child_c<0>(expr), ctx)
+                      , proto::eval(proto::child_c<1>(expr), ctx)
+                    );
+                }
+            };
+
+            template<typename Expr, typename Context>
+            struct default_eval<Expr, Context, tag::mem_ptr, 2>
+              : memfun_eval<Expr, Context, is_member_function_eval<Expr, Context>::value>
+            {};
 
             template<typename Expr, typename Context>
             struct default_eval<Expr, Context, proto::tag::terminal, 0>

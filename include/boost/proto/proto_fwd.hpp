@@ -724,7 +724,7 @@ namespace boost { namespace proto
     struct make;
 
     template<typename Fun>
-    struct bind;
+    struct lazy;
 
     template<typename Sequence, typename State, typename Fun>
     struct fold;

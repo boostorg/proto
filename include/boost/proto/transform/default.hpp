@@ -120,7 +120,6 @@
             BOOST_PROTO_BINARY_OP_RESULT(&, tag::bitwise_and, make, make)
             BOOST_PROTO_BINARY_OP_RESULT(|, tag::bitwise_or, make, make)
             BOOST_PROTO_BINARY_OP_RESULT(^, tag::bitwise_xor, make, make)
-            BOOST_PROTO_BINARY_OP_RESULT(->*, tag::mem_ptr, make_mutable, make)
 
             BOOST_PROTO_BINARY_OP_RESULT(=, tag::assign, make_mutable, make)
             BOOST_PROTO_BINARY_OP_RESULT(<<=, tag::shift_left_assign, make_mutable, make)
@@ -136,6 +135,77 @@
 
             #undef BOOST_PROTO_UNARY_OP_RESULT
             #undef BOOST_PROTO_BINARY_OP_RESULT
+            
+            /// INTERNAL ONLY
+            template<typename Expr, typename State, typename Data>
+            struct is_member_function_invocation
+            {
+                typedef typename result_of::child_c<Expr, 1>::type e1;
+                typedef typename Grammar::template impl<e1, State, Data>::result_type r1;
+                typedef typename remove_const<typename remove_reference<r1>::type>::type uncvref_r1;
+                typedef typename is_member_function_pointer<uncvref_r1>::type type;
+                BOOST_STATIC_CONSTANT(bool, value = type::value);
+            };
+
+            /// INTERNAL ONLY
+            template<typename Expr, typename State, typename Data, bool IsMemFunCall>
+            struct memfun_impl
+              : transform_impl<Expr, State, Data>
+            {
+            private:
+                typedef typename result_of::child_c<Expr, 0>::type e0;
+                typedef typename result_of::child_c<Expr, 1>::type e1;
+                typedef typename Grammar::template impl<e0, State, Data>::result_type r0;
+                typedef typename Grammar::template impl<e1, State, Data>::result_type r1;
+            public:
+                BOOST_PROTO_DECLTYPE_(
+                    proto::detail::make_mutable<r0>() ->* proto::detail::make<r1>()
+                  , result_type
+                )
+                result_type operator ()(
+                    typename memfun_impl::expr_param expr
+                  , typename memfun_impl::state_param state
+                  , typename memfun_impl::data_param data
+                ) const
+                {
+                    typename Grammar::template impl<e0, State, Data> t0;
+                    typename Grammar::template impl<e1, State, Data> t1;
+                    return t0(proto::child_c<0>(expr), state, data)
+                       ->* t1(proto::child_c<1>(expr), state, data);
+                }
+            };
+
+            /// INTERNAL ONLY
+            template<typename Expr, typename State, typename Data>
+            struct memfun_impl<Expr, State, Data, true>
+              : transform_impl<Expr, State, Data>
+            {
+            private:
+                typedef typename result_of::child_c<Expr, 0>::type e0;
+                typedef typename result_of::child_c<Expr, 1>::type e1;
+                typedef typename Grammar::template impl<e0, State, Data>::result_type r0;
+                typedef typename Grammar::template impl<e1, State, Data>::result_type r1;
+            public:
+                typedef detail::memfun<r0, r1> result_type;
+                result_type const operator ()(
+                    typename memfun_impl::expr_param expr
+                  , typename memfun_impl::state_param state
+                  , typename memfun_impl::data_param data
+                ) const
+                {
+                    typename Grammar::template impl<e0, State, Data> t0;
+                    typename Grammar::template impl<e1, State, Data> t1;
+                    return detail::memfun<r0, r1>(
+                        t0(proto::child_c<0>(expr), state, data)
+                      , t1(proto::child_c<1>(expr), state, data)
+                    );
+                }
+            };
+
+            template<typename Expr, typename State, typename Data>
+            struct impl2<Expr, State, Data, tag::mem_ptr, 2>
+              : memfun_impl<Expr, State, Data, is_member_function_invocation<Expr, State, Data>::value>
+            {};
 
             template<typename Expr, typename State, typename Data>
             struct impl2<Expr, State, Data, tag::post_inc, 1>
