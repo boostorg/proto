@@ -63,8 +63,8 @@ exe map_assign
         map_assign.cpp
     ;
 
-exe lambda
+exe mini_lambda
     :
-        lambda.cpp
+        mini_lambda.cpp
     ;
 
