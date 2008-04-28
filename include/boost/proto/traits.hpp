@@ -136,7 +136,7 @@
         /// If <tt>is_aggregate\<T\>::::value</tt> is \c true, then an object of
         /// type T will be initialized as <tt>T t = {a0,a1,...aN};</tt>. Otherwise,
         /// it will be initialized as <tt>T t(a0,a1,...aN)</tt>.
-        template<typename T>
+        template<typename T, typename Void>
         struct is_aggregate
           : is_pod<T>
         {};
@@ -144,7 +144,13 @@
         /// \brief Specialization of <tt>is_aggregate\<\></tt> that indicates
         /// that objects of <tt>expr\<\></tt> type require aggregate initialization.
         template<typename Tag, typename Args, long N>
-        struct is_aggregate<proto::expr<Tag, Args, N> >
+        struct is_aggregate<proto::expr<Tag, Args, N>, void>
+          : mpl::true_
+        {};
+
+        /// INTERNAL ONLY
+        template<typename T>
+        struct is_aggregate<T, typename T::proto_is_aggregate_>
           : mpl::true_
         {};
 
@@ -2245,16 +2251,6 @@
               : is_same<BOOST_PP_CAT(A, BOOST_PP_DEC(N)), callable>
             {};
         }
-
-        ///// INTERNAL ONLY
-        //template<BOOST_PP_ENUM_PARAMS(N, typename A)>
-        //detail::BOOST_PP_CAT(implicit_expr_, N)<BOOST_PP_ENUM_PARAMS(N, A)>
-        //implicit_expr(BOOST_PP_ENUM_BINARY_PARAMS(N, A, &a))
-        //{
-        //    detail::BOOST_PP_CAT(implicit_expr_, N)<BOOST_PP_ENUM_PARAMS(N, A)> that
-        //        = {BOOST_PP_ENUM_PARAMS(N, a)};
-        //    return that;
-        //}
 
     #endif
 

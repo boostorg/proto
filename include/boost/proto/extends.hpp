@@ -104,7 +104,7 @@ namespace boost { namespace proto
         BOOST_PP_CAT(proto_child_ref, N);                                                           \
         /**/
 
-    #define BOOST_PROTO_BASIC_EXTENDS(Expr, Derived, Domain)                                        \
+    #define BOOST_PROTO_BASIC_EXTENDS_(Expr, Derived, Domain)                                       \
         Expr proto_expr_;                                                                           \
                                                                                                     \
         typedef typename Expr::proto_base_expr proto_base_expr;                                     \
@@ -132,6 +132,11 @@ namespace boost { namespace proto
         {                                                                                           \
             return this->proto_expr_.proto_base();                                                  \
         }                                                                                           \
+        /**/
+
+    #define BOOST_PROTO_BASIC_EXTENDS(Expr, Derived, Domain)                                        \
+        BOOST_PROTO_BASIC_EXTENDS_(Expr, Derived, Domain)                                           \
+        typedef void proto_is_aggregate_;                                                           \
         /**/
 
         /// INTERNAL ONLY
@@ -385,7 +390,7 @@ namespace boost { namespace proto
           : proto_expr_(expr_)
         {}
 
-        BOOST_PROTO_BASIC_EXTENDS(Expr, Derived, Domain)
+        BOOST_PROTO_BASIC_EXTENDS_(Expr, Derived, Domain)
         BOOST_PROTO_EXTENDS_ASSIGN_CONST()
         BOOST_PROTO_EXTENDS_SUBSCRIPT_CONST()
 
@@ -423,7 +428,7 @@ namespace boost { namespace proto
           : proto_expr_(expr_)
         {}
 
-        BOOST_PROTO_BASIC_EXTENDS(Expr, Derived, Domain)
+        BOOST_PROTO_BASIC_EXTENDS_(Expr, Derived, Domain)
         BOOST_PROTO_EXTENDS_ASSIGN()
         BOOST_PROTO_EXTENDS_SUBSCRIPT()
 

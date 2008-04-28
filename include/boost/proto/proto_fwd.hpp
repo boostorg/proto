@@ -689,7 +689,7 @@ namespace boost { namespace proto
     template<typename T>
     struct is_callable;
 
-    template<typename T>
+    template<typename T, typename Void = void>
     struct is_aggregate;
 
     template<typename T, typename Void = void>
@@ -698,6 +698,7 @@ namespace boost { namespace proto
     #define BOOST_PROTO_UNEXPR() typedef int proto_is_expr_;
     #define BOOST_PROTO_CALLABLE() typedef void proto_is_callable_;
     #define BOOST_PROTO_TRANSFORM() typedef void proto_is_transform_;
+    #define BOOST_PROTO_AGGREGATE() typedef void proto_is_aggregate_;
 
     struct callable
     {
