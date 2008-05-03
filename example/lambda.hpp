@@ -654,19 +654,6 @@
           : proto::domain<proto::pod_generator<llexpr> >
         {};
 
-        // Ugh, boost::ref() doesn't handle reference-to-function
-        template<typename T>
-        reference_wrapper<T> const llref(T &t, typename disable_if<is_function<T> >::type * = 0)
-        {
-            return reference_wrapper<T>(t);
-        }
-
-        template<typename T>
-        T &llref(T &t, typename enable_if<is_function<T> >::type * = 0)
-        {
-            return t;
-        }
-
         namespace exprns_
         {
             // Ugh, the assign operators (and only the assign operators) store
@@ -1057,7 +1044,6 @@
             return t;
         }
 
-        #define M0(Z, M, DATA) lambda::llref(BOOST_PP_CAT(a, M))
         #define M1(Z, N, DATA)                                                                      \
         template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                          \
         typename proto::result_of::make_expr<                                                       \
@@ -1082,7 +1068,6 @@
         }                                                                                           \
         /**/
         BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_INC(BOOST_PROTO_MAX_ARITY), M1, ~)
-        #undef M0
         #undef M1
 
         template<typename Ret, typename Expr>
@@ -1537,7 +1522,6 @@
             return proto::implicit_expr(noop);
         }
 
-        #define M0(Z, N, DATA) lambda::llref(BOOST_PP_CAT(a, N))
         #define M1(Z, N, DATA)                                                                      \
         template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                          \
         typename proto::result_of::make_expr<                                                       \
@@ -1551,7 +1535,6 @@
         }                                                                                           \
         /**/
         BOOST_PP_REPEAT_FROM_TO(2, BOOST_PP_INC(BOOST_PROTO_MAX_ARITY), M1, ~)
-        #undef M0
         #undef M1
 
         template<typename Expr>
@@ -1596,7 +1579,6 @@
             return proto::implicit_expr(fun, expr);
         }
 
-        #define M0(Z, N, DATA) lambda::llref(BOOST_PP_CAT(a, N))
         #define M1(Z, N, DATA)                                                                      \
         template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                          \
         typename proto::result_of::make_expr<                                                       \
@@ -1610,7 +1592,6 @@
         }                                                                                           \
         /**/
         BOOST_PP_REPEAT_FROM_TO(2, BOOST_PP_INC(BOOST_PROTO_MAX_ARITY), M1, ~)
-        #undef M0
         #undef M1
 
         template<int I, typename Expr>
