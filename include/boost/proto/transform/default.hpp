@@ -103,7 +103,7 @@
             BOOST_PROTO_UNARY_OP_RESULT(--, tag::pre_dec, make_mutable)
 
             BOOST_PROTO_BINARY_OP_RESULT(<<, tag::shift_left, make_mutable, make)
-            BOOST_PROTO_BINARY_OP_RESULT(>>, tag::shift_right, make_mutable, make)
+            BOOST_PROTO_BINARY_OP_RESULT(>>, tag::shift_right, make_mutable, make_mutable)
             BOOST_PROTO_BINARY_OP_RESULT(*, tag::multiplies, make, make)
             BOOST_PROTO_BINARY_OP_RESULT(/, tag::divides, make, make)
             BOOST_PROTO_BINARY_OP_RESULT(%, tag::modulus, make, make)
