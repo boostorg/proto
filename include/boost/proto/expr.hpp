@@ -99,6 +99,14 @@
         #include BOOST_PP_ITERATE()
         }
 
+        // TODO consider adding a basic_expr<> that doesn't have operator=,
+        // operator[] or operator() for use by BOOST_PROTO_BASIC_EXTENDS().
+        // Those member functions are unused in that case, and only slow
+        // down instantiations. basic_expr::proto_base_expr can still be
+        // expr<> because uses of proto_base_expr in proto::matches<> shouldn't
+        // case the expr<> type to be instantiated. (<-- Check that assumtion!)
+        // OR, should expr<>::proto_base_expr be a typedef for basic_expr<>?
+
         BOOST_PROTO_BEGIN_ADL_NAMESPACE(exprns_)
         #define BOOST_PP_ITERATION_PARAMS_1 (3, (0, BOOST_PROTO_MAX_ARITY, <boost/proto/expr.hpp>))
         #include BOOST_PP_ITERATE()
