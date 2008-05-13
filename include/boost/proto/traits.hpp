@@ -1570,6 +1570,17 @@
                 typedef U proto_child1;
             };
 
+            /// \brief A grammar element for matching virtual data members.
+            ///
+            template<typename T, typename U>
+            struct member
+            {
+                typedef expr<tag::member, list2<T, U> > type;
+                typedef type proto_base_expr;
+
+                // TODO pass-through transform?
+            };
+
         } // namespace op
 
     #define BOOST_PROTO_CHILD(Z, N, DATA)                                                           \

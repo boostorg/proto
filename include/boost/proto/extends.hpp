@@ -31,6 +31,19 @@
 
 namespace boost { namespace proto
 {
+    #ifdef __GNUC__
+    /// INTERNAL ONLY
+    ///
+    # define BOOST_PROTO_ADDROF(x) ((char const volatile*)boost::addressof(x))
+    /// INTERNAL ONLY
+    ///
+    # define BOOST_PROTO_OFFSETOF(s,m) (BOOST_PROTO_ADDROF((((s *)this)->m)) - BOOST_PROTO_ADDROF(*((s *)this)))
+    #else
+    /// INTERNAL ONLY
+    ///
+    # define BOOST_PROTO_OFFSETOF offsetof
+    #endif
+
     /// INTERNAL ONLY
     ///
     #define BOOST_PROTO_CONST0
@@ -454,6 +467,67 @@ namespace boost { namespace proto
     #define BOOST_PP_LOCAL_LIMITS (0, BOOST_PP_DEC(BOOST_PROTO_MAX_FUNCTION_CALL_ARITY))
     #include BOOST_PP_LOCAL_ITERATE()
     };
+
+    /// INTERNAL ONLY
+    ///
+    template<typename This, typename Fun, typename Domain>
+    struct virtual_member
+    {
+        typedef
+            expr<tag::member, list2<This &, expr<tag::terminal, term<Fun> > const &> >
+        proto_base_expr;
+        typedef Domain proto_domain;
+        typedef virtual_member<This, Fun, Domain> proto_derived_expr;
+        typedef typename proto_base_expr::proto_tag proto_tag;
+        typedef typename proto_base_expr::proto_args proto_args;
+        typedef typename proto_base_expr::proto_arity proto_arity;
+        typedef typename proto_base_expr::address_of_hack_type_ proto_address_of_hack_type_;
+        typedef void proto_is_expr_;
+        BOOST_PROTO_FUSION_DEFINE_TAG(boost::proto::tag::proto_expr)
+        BOOST_PP_REPEAT(BOOST_PROTO_MAX_ARITY, BOOST_PROTO_EXTENDS_CHILD, ~)
+        typedef void proto_is_aggregate_;
+
+        BOOST_PROTO_EXTENDS_ASSIGN()
+        BOOST_PROTO_EXTENDS_SUBSCRIPT()
+        BOOST_PROTO_EXTENDS_FUNCTION()
+
+        proto_base_expr const proto_base() const
+        {
+            proto_base_expr that = {this->child0(), this->child1()};
+            return that;
+        }
+
+        proto_child0 child0() const
+        {
+            return *(This *)((char *)this - BOOST_PROTO_OFFSETOF(This, proto_member_union_start_));
+        }
+
+        proto_child1 child1() const
+        {
+            static expr<tag::terminal, term<Fun> > const that = {Fun()};
+            return that;
+        }
+    };
+
+    /// INTERNAL ONLY
+    ///
+    #define BOOST_PROTO_DECLARE_MEMBER(R, DATA, ELEM)                                               \
+        boost::proto::exprns_::virtual_member<                                                      \
+            proto_derived_expr                                                                      \
+          , BOOST_PP_TUPLE_ELEM(2, 0, ELEM)                                                         \
+          , proto_domain                                                                            \
+        > BOOST_PP_TUPLE_ELEM(2, 1, ELEM);                                                          \
+        /**/
+
+    /// \brief For declaring virtual data members in an extension class.
+    ///
+    #define BOOST_PROTO_DECLARE_MEMBERS(SEQ)                                                        \
+        union                                                                                       \
+        {                                                                                           \
+            char proto_member_union_start_;                                                         \
+            BOOST_PP_SEQ_FOR_EACH(BOOST_PROTO_DECLARE_MEMBER, ~, SEQ)                               \
+        };                                                                                          \
+        /**/
 
     BOOST_PROTO_END_ADL_NAMESPACE(exprns_)
 
