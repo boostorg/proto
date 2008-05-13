@@ -113,6 +113,7 @@ namespace boost { namespace proto
         typedef typename proto_base_expr::proto_tag proto_tag;                                      \
         typedef typename proto_base_expr::proto_args proto_args;                                    \
         typedef typename proto_base_expr::proto_arity proto_arity;                                  \
+        typedef typename proto_base_expr::address_of_hack_type_ proto_address_of_hack_type_;        \
         typedef void proto_is_expr_;                                                                \
         BOOST_PROTO_FUSION_DEFINE_TAG(boost::proto::tag::proto_expr)                                \
         BOOST_PP_REPEAT(BOOST_PROTO_MAX_ARITY, BOOST_PROTO_EXTENDS_CHILD, ~)                        \
@@ -131,6 +132,11 @@ namespace boost { namespace proto
         proto_base_expr const &proto_base() const                                                   \
         {                                                                                           \
             return this->proto_expr_.proto_base();                                                  \
+        }                                                                                           \
+                                                                                                    \
+        operator proto_address_of_hack_type_() const                                                \
+        {                                                                                           \
+            return boost::addressof(this->proto_base().child0);                                     \
         }                                                                                           \
         /**/
 

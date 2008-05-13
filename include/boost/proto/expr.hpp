@@ -55,10 +55,17 @@
             typedef void BOOST_PP_CAT(proto_child_ref, N);                                          \
             /**/
 
+            struct not_a_valid_type
+            {
+            private:
+                not_a_valid_type()
+                {}
+            };
+            
             template<typename Tag, typename Arg>
             struct address_of_hack
             {
-                typedef address_of_hack type;
+                typedef not_a_valid_type type;
             };
 
             template<typename Expr>
@@ -255,6 +262,10 @@
             {
                 return boost::addressof(this->child0);
             }
+        #else
+            /// INTERNAL ONLY
+            ///
+            typedef detail::not_a_valid_type address_of_hack_type_;
         #endif
 
             /// Assignment
