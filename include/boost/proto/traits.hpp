@@ -1570,15 +1570,27 @@
                 typedef U proto_child1;
             };
 
-            /// \brief A grammar element for matching virtual data members.
-            ///
+            /// \brief A metafunction for generating virtual data member expression
+            /// types, a grammar element for matching member expressions, and a
+            /// PrimitiveTransform that dispatches to the <tt>pass_through\<\></tt>
+            /// transform.
             template<typename T, typename U>
-            struct member
+            struct member : transform<member<T, U>, empty_base>
             {
                 typedef expr<tag::member, list2<T, U> > type;
                 typedef type proto_base_expr;
 
-                // TODO pass-through transform?
+                template<typename Expr, typename State, typename Data>
+                struct impl
+                  : pass_through<member>::template impl<Expr, State, Data>
+                {};
+
+                /// INTERNAL ONLY
+                typedef proto::tag::member proto_tag;
+                /// INTERNAL ONLY
+                typedef T proto_child0;
+                /// INTERNAL ONLY
+                typedef U proto_child1;
             };
 
         } // namespace op
@@ -2201,6 +2213,13 @@
                 BOOST_PP_ENUM_PARAMS(N, A)
                 BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PP_SUB(BOOST_PROTO_MAX_ARITY, N), void BOOST_PP_INTERCEPT), void
             >
+              : transform<
+                    function<
+                        BOOST_PP_ENUM_PARAMS(N, A)
+                        BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PP_SUB(BOOST_PROTO_MAX_ARITY, N), void BOOST_PP_INTERCEPT), void
+                    >
+                  , empty_base
+                >
             {
                 typedef proto::expr<proto::tag::function, BOOST_PP_CAT(list, N)<BOOST_PP_ENUM_PARAMS(N, A)> > type;
                 typedef type proto_base_expr;
@@ -2235,6 +2254,14 @@
                 BOOST_PP_ENUM_TRAILING_PARAMS(N, A)
                 BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PP_SUB(BOOST_PROTO_MAX_ARITY, N), void BOOST_PP_INTERCEPT), void
             >
+              : transform<
+                    nary_expr<
+                        Tag
+                        BOOST_PP_ENUM_TRAILING_PARAMS(N, A)
+                        BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PP_SUB(BOOST_PROTO_MAX_ARITY, N), void BOOST_PP_INTERCEPT), void
+                    >
+                  , empty_base
+                >
             {
                 typedef proto::expr<Tag, BOOST_PP_CAT(list, N)<BOOST_PP_ENUM_PARAMS(N, A)> > type;
                 typedef type proto_base_expr;

@@ -10,6 +10,7 @@
 #define BOOST_PROTO_EXTENDS_HPP_EAN_11_1_2006
 
 #include <boost/proto/detail/prefix.hpp>
+#include <cstddef> // for offsetof
 #include <boost/preprocessor/tuple/elem.hpp>
 #include <boost/preprocessor/control/if.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
@@ -20,6 +21,7 @@
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/preprocessor/repetition/enum_trailing_binary_params.hpp>
+#include <boost/utility/addressof.hpp>
 #include <boost/utility/result_of.hpp>
 #include <boost/proto/proto_fwd.hpp>
 #include <boost/proto/traits.hpp>
