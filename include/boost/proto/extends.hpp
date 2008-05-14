@@ -513,7 +513,7 @@ namespace boost { namespace proto
 
     /// INTERNAL ONLY
     ///
-    #define BOOST_PROTO_DECLARE_MEMBER(R, DATA, ELEM)                                               \
+    #define BOOST_PROTO_EXTENDS_MEMBER_(R, DATA, ELEM)                                              \
         boost::proto::exprns_::virtual_member<                                                      \
             proto_derived_expr                                                                      \
           , BOOST_PP_TUPLE_ELEM(2, 0, ELEM)                                                         \
@@ -523,11 +523,11 @@ namespace boost { namespace proto
 
     /// \brief For declaring virtual data members in an extension class.
     ///
-    #define BOOST_PROTO_DECLARE_MEMBERS(SEQ)                                                        \
+    #define BOOST_PROTO_EXTENDS_MEMBERS(SEQ)                                                        \
         union                                                                                       \
         {                                                                                           \
             char proto_member_union_start_;                                                         \
-            BOOST_PP_SEQ_FOR_EACH(BOOST_PROTO_DECLARE_MEMBER, ~, SEQ)                               \
+            BOOST_PP_SEQ_FOR_EACH(BOOST_PROTO_EXTENDS_MEMBER_, ~, SEQ)                              \
         };                                                                                          \
         /**/
 
