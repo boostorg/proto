@@ -116,7 +116,21 @@ namespace boost { namespace proto
                 return typename result<as_element(Expr const &)>::type(expr);
             }
         };
+    }
+    
+    namespace result_of
+    {
+        template<typename Expr>
+        struct flatten
+        {
+            typedef detail::flat_view<Expr const> type;
+        };
 
+        template<typename Expr>
+        struct flatten<Expr &>
+        {
+            typedef detail::flat_view<Expr const> type;
+        };
     }
 
     namespace functional
