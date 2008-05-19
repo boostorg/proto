@@ -326,7 +326,7 @@ namespace boost { namespace proto
         BOOST_PROTO_EXTENDS_FUNCTION_()                                                             \
         BOOST_PP_REPEAT_FROM_TO(                                                                    \
             0                                                                                       \
-          , BOOST_PP_DEC(BOOST_PROTO_MAX_FUNCTION_CALL_ARITY)                                       \
+          , BOOST_PROTO_MAX_FUNCTION_CALL_ARITY                                                     \
           , BOOST_PROTO_DEFINE_FUN_OP_CONST                                                         \
           , ~                                                                                       \
         )                                                                                           \
@@ -336,7 +336,7 @@ namespace boost { namespace proto
         BOOST_PROTO_EXTENDS_FUNCTION_()                                                             \
         BOOST_PP_REPEAT_FROM_TO(                                                                    \
             0                                                                                       \
-          , BOOST_PP_DEC(BOOST_PROTO_MAX_FUNCTION_CALL_ARITY)                                       \
+          , BOOST_PROTO_MAX_FUNCTION_CALL_ARITY                                                     \
           , BOOST_PROTO_DEFINE_FUN_OP_NON_CONST                                                     \
           , ~                                                                                       \
         )                                                                                           \
@@ -346,7 +346,7 @@ namespace boost { namespace proto
         BOOST_PROTO_EXTENDS_FUNCTION_()                                                             \
         BOOST_PP_REPEAT_FROM_TO(                                                                    \
             0                                                                                       \
-          , BOOST_PP_DEC(BOOST_PROTO_MAX_FUNCTION_CALL_ARITY)                                       \
+          , BOOST_PROTO_MAX_FUNCTION_CALL_ARITY                                                     \
           , BOOST_PROTO_DEFINE_FUN_OP                                                               \
           , ~                                                                                       \
         )                                                                                           \
