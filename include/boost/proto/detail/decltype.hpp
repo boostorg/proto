@@ -148,6 +148,12 @@ namespace boost { namespace proto
             typedef T type;
         };
 
+        template<typename T, typename U, typename V>
+        struct result_of_<T U::*(V &)>
+        {
+            typedef T &type;
+        };
+
         ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename T, typename U = T>
         struct result_of_fixup
