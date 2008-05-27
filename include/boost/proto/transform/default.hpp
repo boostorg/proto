@@ -135,7 +135,7 @@
 
             #undef BOOST_PROTO_UNARY_OP_RESULT
             #undef BOOST_PROTO_BINARY_OP_RESULT
-            
+
             /// INTERNAL ONLY
             template<typename Expr, typename State, typename Data>
             struct is_member_function_invocation
@@ -330,7 +330,7 @@
                          , t1(proto::child_c<1>(expr), state, data);
                 }
             };
-            
+
             #define EVAL_TYPE(Z, N, DATA)                                                           \
                 typedef                                                                             \
                     typename result_of::child_c<DATA, N>::type                                      \

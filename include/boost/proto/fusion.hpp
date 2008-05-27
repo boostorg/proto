@@ -117,7 +117,7 @@ namespace boost { namespace proto
             }
         };
     }
-    
+
     namespace result_of
     {
         template<typename Expr>

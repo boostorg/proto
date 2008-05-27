@@ -152,6 +152,56 @@
             #undef TMP
         }
 
+        /// \brief A PrimitiveTransform which prevents another PrimitiveTransform
+        /// from being applied in an \c ObjectTransform.
+        ///
+        /// When building higher order transforms with <tt>make\<\></tt> or
+        /// <tt>lazy\<\></tt>, you sometimes would like to build types that
+        /// are parameterized with Proto transforms. In such lambda-style
+        /// transforms, Proto will unhelpfully find all nested transforms
+        /// and apply them, even if you don't want them to be applied. Consider
+        /// the following transform, which will replace the \c _ in
+        /// <tt>Bar<_>()</tt> with <tt>proto::terminal\<int\>::type</tt>:
+        ///
+        /// \code
+        /// template<typename T>
+        /// struct Bar
+        /// {};
+        /// 
+        /// struct Foo
+        ///   : proto::when<_, Bar<_>() >
+        /// {};
+        /// 
+        /// proto::terminal<int>::type i = {0};
+        /// 
+        /// int main()
+        /// {
+        ///     Foo()(i);
+        ///     std::cout << typeid(Foo()(i)).name() << std::endl;
+        /// }
+        /// \endcode
+        ///
+        /// If you actually wanted to default-construct an object of type
+        /// <tt>Bar\<_\></tt>, you would have to protect the \c _ to prevent
+        /// it from being applied. You can use <tt>proto::protect\<\></tt>
+        /// as follows:
+        ///
+        /// \code
+        /// // OK: replace anything with Bar<_>()
+        /// struct Foo
+        ///   : proto::when<_, Bar<_>() >
+        /// {};
+        /// \endcode
+        template<typename PrimitiveTransform>
+        struct protect : transform<protect<PrimitiveTransform> >
+        {
+            template<typename, typename, typename>
+            struct impl
+            {
+                typedef PrimitiveTransform result_type;
+            };
+        };
+
         /// \brief A PrimitiveTransform which computes a type by evaluating any
         /// nested transforms and then constructs an object of that type.
         ///
@@ -212,6 +262,12 @@
           : mpl::true_
         {};
 
+        /// INTERNAL ONLY
+        ///
+        template<typename PrimitiveTransform>
+        struct is_callable<protect<PrimitiveTransform> >
+          : mpl::true_
+        {};
     }}
 
     #endif

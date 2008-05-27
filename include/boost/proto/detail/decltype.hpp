@@ -225,7 +225,7 @@ namespace boost { namespace proto
 
         private:
             T obj;
-            PMF pmf;            
+            PMF pmf;
         };
 
     } // namespace detail

@@ -729,6 +729,9 @@ namespace boost { namespace proto
     template<typename Fun>
     struct make;
 
+    template<typename PrimitiveTransform>
+    struct protect;
+
     template<typename Fun>
     struct lazy;
 
