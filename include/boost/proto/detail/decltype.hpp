@@ -16,9 +16,11 @@
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/mpl/if.hpp>
+#include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/is_function.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/utility/result_of.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <boost/proto/detail/suffix.hpp> // must be last include
 
 // If we're generating doxygen documentation, hide all the nasty
@@ -137,19 +139,19 @@ namespace boost { namespace proto
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        template<typename T>
+        template<typename T, typename Void = void>
         struct result_of_
           : boost::result_of<T>
         {};
 
         template<typename T, typename U, typename V>
-        struct result_of_<T U::*(V)>
+        struct result_of_<T U::*(V), typename disable_if<is_function<typename remove_cv<T>::type> >::type>
         {
             typedef T type;
         };
 
         template<typename T, typename U, typename V>
-        struct result_of_<T U::*(V &)>
+        struct result_of_<T U::*(V &), typename disable_if<is_function<typename remove_cv<T>::type> >::type>
         {
             typedef T &type;
         };
