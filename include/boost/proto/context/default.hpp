@@ -155,14 +155,13 @@
                 typedef typename proto::result_of::eval<UNREF(e0), Context>::type r0;
                 typedef typename proto::result_of::eval<UNREF(e1), Context>::type r1;
             public:
-                BOOST_PROTO_DECLTYPE_(
-                    proto::detail::make_mutable<r0>() ->* proto::detail::make<r1>()
-                  , result_type
-                )
+                typedef typename detail::mem_ptr_fun<r0, r1>::result_type result_type;
                 result_type operator ()(Expr &expr, Context &ctx) const
                 {
-                    return proto::eval(proto::child_c<0>(expr), ctx)
-                       ->* proto::eval(proto::child_c<1>(expr), ctx);
+                    return detail::mem_ptr_fun<r0, r1>()(
+                        proto::eval(proto::child_c<0>(expr), ctx)
+                      , proto::eval(proto::child_c<1>(expr), ctx)
+                    );
                 }
             };
 

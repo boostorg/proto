@@ -159,10 +159,7 @@
                 typedef typename Grammar::template impl<e0, State, Data>::result_type r0;
                 typedef typename Grammar::template impl<e1, State, Data>::result_type r1;
             public:
-                BOOST_PROTO_DECLTYPE_(
-                    proto::detail::make_mutable<r0>() ->* proto::detail::make<r1>()
-                  , result_type
-                )
+                typedef typename detail::mem_ptr_fun<r0, r1>::result_type result_type;
                 result_type operator ()(
                     typename memfun_impl::expr_param expr
                   , typename memfun_impl::state_param state
@@ -171,8 +168,10 @@
                 {
                     typename Grammar::template impl<e0, State, Data> t0;
                     typename Grammar::template impl<e1, State, Data> t1;
-                    return t0(proto::child_c<0>(expr), state, data)
-                       ->* t1(proto::child_c<1>(expr), state, data);
+                    return detail::mem_ptr_fun<r0, r1>()(
+                        t0(proto::child_c<0>(expr), state, data)
+                      , t1(proto::child_c<1>(expr), state, data)
+                    );
                 }
             };
 

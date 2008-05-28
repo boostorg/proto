@@ -18,8 +18,12 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/type_traits/remove_cv.hpp>
+#include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/type_traits/is_function.hpp>
+#include <boost/type_traits/is_member_object_pointer.hpp>
+#include <boost/type_traits/add_const.hpp>
+#include <boost/type_traits/add_reference.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/utility/addressof.hpp>
 #include <boost/utility/result_of.hpp>
@@ -126,7 +130,51 @@ namespace boost { namespace proto
             {
                 return boost::addressof(t);
             }
+            
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            template<
+                typename T
+              , typename U
+              , bool IsMemPtr = is_member_object_pointer<
+                    typename remove_reference<U>::type
+                >::value
+            >
+            struct mem_ptr_fun
+            {
+                BOOST_PROTO_DECLTYPE_(
+                    proto::detail::make_mutable<T>() ->* proto::detail::make<U>()
+                  , result_type
+                )
+
+                result_type operator()(
+                    typename add_reference<typename add_const<T>::type>::type t
+                  , typename add_reference<typename add_const<U>::type>::type u
+                ) const
+                {
+                    return t ->* u;
+                }
+            };
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            template<typename T, typename U>
+            struct mem_ptr_fun<T, U, true>
+            {
+                BOOST_PROTO_DECLTYPE_(
+                    get_pointer(proto::detail::make_mutable<T>()) ->* proto::detail::make<U>()
+                  , result_type
+                )
+
+                result_type operator()(
+                    typename add_reference<typename add_const<T>::type>::type t
+                  , typename add_reference<typename add_const<U>::type>::type u
+                ) const
+                {
+                    return get_pointer(t) ->* u;
+                }
+            };
         }
+
+        using get_pointer_::mem_ptr_fun;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename A0, typename A1>
