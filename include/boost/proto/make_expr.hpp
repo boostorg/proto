@@ -1036,16 +1036,21 @@
             template<typename Args>
             operator proto::expr<tag::terminal, Args, 0>() const
             {
-                proto::expr<tag::terminal, Args, 0> that = {a0};
+                proto::expr<tag::terminal, Args, 0> that = {this->a0};
                 return that;
             };
 
             template<typename Tag, typename Args, long Arity>
             operator proto::expr<Tag, Args, Arity>() const
             {
-                #define M0(Z, N, DATA) detail::implicit_arg_1(this->BOOST_PP_CAT(a, N))
-                proto::expr<Tag, Args, Arity> that = {BOOST_PP_ENUM(N, M0, ~)};
+                BOOST_MPL_ASSERT_RELATION(Arity, ==, N);
+                #define M0(Z, N, DATA)                                                              \
+                    typename Args::BOOST_PP_CAT(child_ref, N)::const_reference BOOST_PP_CAT(b, N)   \
+                        = detail::implicit_arg_1(this->BOOST_PP_CAT(a, N));                         \
+                    /**/
+                BOOST_PP_REPEAT(N, M0, ~)
                 #undef M0
+                proto::expr<Tag, Args, Arity> that = {BOOST_PP_ENUM_PARAMS(N, b)};
                 return that;
             };
 
