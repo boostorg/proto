@@ -11,14 +11,17 @@
 
 #include <boost/proto/detail/prefix.hpp> // must be first include
 #include <boost/config.hpp>
+#include <boost/get_pointer.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/type_traits/remove_cv.hpp>
+#include <boost/type_traits/is_pointer.hpp>
 #include <boost/type_traits/is_function.hpp>
 #include <boost/typeof/typeof.hpp>
+#include <boost/utility/addressof.hpp>
 #include <boost/utility/result_of.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/proto/detail/suffix.hpp> // must be last include
@@ -88,29 +91,41 @@ namespace boost { namespace proto
         template<typename T>
         char (&check_reference(T const &))[2];
 
+        namespace has_get_pointer_
+        {
+            using boost::get_pointer;
+            void *(&get_pointer(...))[2];
+            
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            template<typename T>
+            struct has_get_pointer
+            {
+                static T &t;
+                BOOST_STATIC_CONSTANT(bool, value = sizeof(void *) == sizeof(get_pointer(t)));
+                typedef mpl::bool_<value> type;
+            };
+        }
+
+        using has_get_pointer_::has_get_pointer;
+        
         ////////////////////////////////////////////////////////////////////////////////////////////
-        template<typename T>
-        T &deref(T &t)
+        namespace get_pointer_
         {
-            return t;
-        }
+            using boost::get_pointer;
 
-        template<typename T>
-        T const &deref(T const &t)
-        {
-            return t;
-        }
+            template<typename T>
+            typename disable_if<has_get_pointer<T>, T *>::type
+            get_pointer(T &t)
+            {
+                return boost::addressof(t);
+            }
 
-        template<typename T>
-        T &deref(T *&t)
-        {
-            return *t;
-        }
-
-        template<typename T>
-        T &deref(T *const &t)
-        {
-            return *t;
+            template<typename T>
+            typename disable_if<has_get_pointer<T>, T const *>::type
+            get_pointer(T const &t)
+            {
+                return boost::addressof(t);
+            }
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,14 +227,16 @@ namespace boost { namespace proto
 
             result_type operator()() const
             {
-                return (detail::deref(obj).*pmf)();
+                using namespace get_pointer_;
+                return (get_pointer(obj) ->* pmf)();
             }
 
             #define M0(Z, N, DATA)                                                                  \
             template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                      \
             result_type operator()(BOOST_PP_ENUM_BINARY_PARAMS_Z(Z, N, A, const &a)) const          \
             {                                                                                       \
-                return (detail::deref(obj).*pmf)(BOOST_PP_ENUM_PARAMS_Z(Z, N, a));                  \
+                using namespace get_pointer_;                                                       \
+                return (get_pointer(obj) ->* pmf)(BOOST_PP_ENUM_PARAMS_Z(Z, N, a));                  \
             }                                                                                       \
             /**/
             BOOST_PP_REPEAT_FROM_TO(1, BOOST_PROTO_MAX_ARITY, M0, ~)

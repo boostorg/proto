@@ -17,6 +17,7 @@
     #include <boost/preprocessor/repetition/enum_shifted.hpp>
     #include <boost/preprocessor/repetition/enum_shifted_params.hpp>
     #include <boost/ref.hpp>
+    #include <boost/get_pointer.hpp>
     #include <boost/utility/enable_if.hpp>
     #include <boost/type_traits/is_member_pointer.hpp>
     #include <boost/type_traits/is_member_object_pointer.hpp>
@@ -420,7 +421,8 @@
                   , mpl::false_
                 ) const
                 {
-                    return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr))();
+                    using namespace detail::get_pointer_;
+                    return (get_pointer(EVAL(~, 1, expr)) ->* EVAL(~, 0, expr))();
                 }
 
                 result_type invoke(
@@ -431,7 +433,8 @@
                   , mpl::true_
                 ) const
                 {
-                    return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr));
+                    using namespace detail::get_pointer_;
+                    return (get_pointer(EVAL(~, 1, expr)) ->* EVAL(~, 0, expr));
                 }
             };
 
@@ -510,7 +513,8 @@
             ) const
             {
                 #define M0(Z, M, expr) BOOST_PP_COMMA_IF(BOOST_PP_SUB(M, 2)) EVAL(Z, M, expr)
-                return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr))(
+                using namespace detail::get_pointer_;
+                return (get_pointer(EVAL(~, 1, expr)) ->* EVAL(~, 0, expr))(
                     BOOST_PP_REPEAT_FROM_TO(2, N, M0, expr)
                 );
                 #undef M0

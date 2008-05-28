@@ -354,12 +354,14 @@
 
                 result_type invoke(Expr &expr, Context &context, mpl::true_, mpl::false_) const
                 {
-                    return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr))();
+                    using namespace detail::get_pointer_;
+                    return (get_pointer(EVAL(~, 1, expr)) ->* EVAL(~, 0, expr))();
                 }
 
                 result_type invoke(Expr &expr, Context &context, mpl::false_, mpl::true_) const
                 {
-                    return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr));
+                    using namespace detail::get_pointer_;
+                    return (get_pointer(EVAL(~, 1, expr)) ->* EVAL(~, 0, expr));
                 }
             };
 
@@ -420,7 +422,8 @@
             result_type invoke(Expr &expr, Context &context, mpl::true_) const
             {
                 #define M0(Z, M, expr) BOOST_PP_COMMA_IF(BOOST_PP_SUB(M, 2)) EVAL(Z, M, expr)
-                return (detail::deref(EVAL(~, 1, expr)) .* EVAL(~, 0, expr))(
+                using namespace detail::get_pointer_;
+                return (get_pointer(EVAL(~, 1, expr)) ->* EVAL(~, 0, expr))(
                     BOOST_PP_REPEAT_FROM_TO(2, N, M0, expr)
                 );
                 #undef M0
