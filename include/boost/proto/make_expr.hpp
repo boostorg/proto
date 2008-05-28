@@ -496,24 +496,6 @@
               : make_expr_<tag::terminal, default_domain, A>
             {};
 
-            template<typename A0>
-            struct implicit_expr_1;
-
-            template<typename T>
-            typename disable_if_c<is_expr<T>::value, implicit_expr_1<T> >::type
-            implicit_arg_1(T &t)
-            {
-                implicit_expr_1<T> that = {t};
-                return that;
-            }
-
-            template<typename T>
-            typename disable_if_c<!is_expr<T>::value, T &>::type
-            implicit_arg_1(T &t)
-            {
-                return t;
-            }
-
         #define BOOST_PP_ITERATION_PARAMS_1                                                         \
             (4, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/make_expr.hpp>, 1))                         \
             /**/
@@ -1033,26 +1015,35 @@
             BOOST_PP_REPEAT(N, M0, ~)
             #undef M0
 
+            #if N == 1
+            operator A0 &() const
+            {
+                return this->a0;
+            }
+
             template<typename Args>
             operator proto::expr<tag::terminal, Args, 0>() const
             {
                 proto::expr<tag::terminal, Args, 0> that = {this->a0};
                 return that;
             };
+            #endif
 
-            template<typename Tag, typename Args, long Arity>
-            operator proto::expr<Tag, Args, Arity>() const
+            #if N > 0
+            template<typename Tag, typename Args>
+            operator proto::expr<Tag, Args, N>() const
             {
-                BOOST_MPL_ASSERT_RELATION(Arity, ==, N);
                 #define M0(Z, N, DATA)                                                              \
-                    typename Args::BOOST_PP_CAT(child_ref, N)::const_reference BOOST_PP_CAT(b, N)   \
-                        = detail::implicit_arg_1(this->BOOST_PP_CAT(a, N));                         \
+                    implicit_expr_1<BOOST_PP_CAT(A, N)> BOOST_PP_CAT(b, N)                          \
+                        = {this->BOOST_PP_CAT(a, N)};                                               \
+                    typename Args::BOOST_PP_CAT(child, N) BOOST_PP_CAT(c, N) = BOOST_PP_CAT(b, N);  \
                     /**/
                 BOOST_PP_REPEAT(N, M0, ~)
                 #undef M0
-                proto::expr<Tag, Args, Arity> that = {BOOST_PP_ENUM_PARAMS(N, b)};
+                proto::expr<Tag, Args, N> that = {BOOST_PP_ENUM_PARAMS(N, c)};
                 return that;
             };
+            #endif
 
             template<typename Expr>
             operator Expr() const
