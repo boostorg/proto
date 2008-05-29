@@ -243,7 +243,7 @@
                 typedef typename proto::result_of::eval<UNREF(e0), Context>::type r0;
                 typedef typename proto::result_of::eval<UNREF(e1), Context>::type r1;
             public:
-                BOOST_PROTO_DECLTYPE_(proto::detail::make<r0>()[proto::detail::make<r1>()], result_type)
+                BOOST_PROTO_DECLTYPE_(proto::detail::make_subscriptable<r0>()[proto::detail::make<r1>()], result_type)
                 result_type operator ()(Expr &expr, Context &ctx) const
                 {
                     return proto::eval(proto::child_c<0>(expr), ctx)[proto::eval(proto::child_c<1>(expr), ctx)];

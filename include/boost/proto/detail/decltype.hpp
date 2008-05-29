@@ -63,6 +63,62 @@ namespace boost { namespace proto
     namespace detail
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
+        struct any
+        {
+            any(...);
+            any operator=(any);
+            any operator[](any);
+            #define M0(Z, N, DATA) any operator()(BOOST_PP_ENUM_PARAMS_Z(Z, N, any BOOST_PP_INTERCEPT));
+            BOOST_PP_REPEAT(BOOST_PROTO_MAX_ARITY, M0, ~)
+            #undef M0
+
+            operator int any::*();
+
+            any operator+();
+            any operator-();
+            any operator*();
+            any operator&();
+            any operator~();
+            any operator!();
+            any operator++();
+            any operator--();
+            any operator++(int);
+            any operator--(int);
+
+            any operator<<(any);
+            any operator>>(any);
+            any operator*(any);
+            any operator/(any);
+            any operator%(any);
+            any operator+(any);
+            any operator-(any);
+            any operator<(any);
+            any operator>(any);
+            any operator<=(any);
+            any operator>=(any);
+            any operator==(any);
+            any operator!=(any);
+            any operator||(any);
+            any operator&&(any);
+            any operator&(any);
+            any operator|(any);
+            any operator^(any);
+            any operator,(any);
+            any operator->*(any);
+
+            any operator<<=(any);
+            any operator>>=(any);
+            any operator*=(any);
+            any operator/=(any);
+            any operator%=(any);
+            any operator+=(any);
+            any operator-=(any);
+            any operator&=(any);
+            any operator|=(any);
+            any operator^=(any);
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename T>
         struct as_mutable
         {
@@ -91,6 +147,68 @@ namespace boost { namespace proto
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename T>
+        struct subscript_wrapper
+          : T
+        {
+            using T::operator[];
+            any operator[](any) const volatile;
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename T>
+        struct as_subscriptable
+        {
+            typedef
+                typename mpl::if_c<
+                    is_class<T>::value
+                  , subscript_wrapper<T>
+                  , T
+                >::type
+            type;
+        };
+
+        template<typename T>
+        struct as_subscriptable<T const>
+        {
+            typedef
+                typename mpl::if_c<
+                    is_class<T>::value
+                  , subscript_wrapper<T> const
+                  , T const
+                >::type
+            type;
+        };
+
+        template<typename T>
+        struct as_subscriptable<T &>
+        {
+            typedef
+                typename mpl::if_c<
+                    is_class<T>::value
+                  , subscript_wrapper<T> &
+                  , T &
+                >::type
+            type;
+        };
+
+        template<typename T>
+        struct as_subscriptable<T const &>
+        {
+            typedef
+                typename mpl::if_c<
+                    is_class<T>::value
+                  , subscript_wrapper<T> const &
+                  , T const &
+                >::type
+            type;
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename T>
+        typename as_subscriptable<T>::type make_subscriptable();
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename T>
         char check_reference(T &);
 
         template<typename T>
@@ -100,7 +218,7 @@ namespace boost { namespace proto
         {
             using boost::get_pointer;
             void *(&get_pointer(...))[2];
-            
+
             ////////////////////////////////////////////////////////////////////////////////////////////
             template<typename T>
             struct has_get_pointer

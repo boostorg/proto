@@ -258,7 +258,7 @@
                 typedef typename Grammar::template impl<e1, State, Data>::result_type r1;
             public:
                 BOOST_PROTO_DECLTYPE_(
-                    proto::detail::make<r0>() [ proto::detail::make<r1>() ]
+                    proto::detail::make_subscriptable<r0>() [ proto::detail::make<r1>() ]
                   , result_type
                 )
                 result_type operator ()(
