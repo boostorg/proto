@@ -650,9 +650,23 @@
         typedef llexpr<proto::terminal<exception_placeholder>::type> placeholderE_type;
         placeholderE_type const _e = {{{}}};
 
-        struct byref_domain
-          : proto::domain<proto::pod_generator<llexpr> >
-        {};
+        template<typename T>
+        struct byref
+        {
+            typedef llexpr<typename proto::terminal<T &>::type> type;
+        };
+
+        template<typename T>
+        struct byref<llexpr<T> >
+        {
+            typedef llexpr<T> &type;
+        };
+
+        template<typename T>
+        struct byref<llexpr<T> const>
+        {
+            typedef llexpr<T> const &type;
+        };
 
         namespace exprns_
         {
@@ -663,7 +677,7 @@
             typename proto::result_of::make_expr<                                                   \
                 TAG                                                                                 \
               , lldomain                                                                            \
-              , typename proto::result_of::as_child<T, byref_domain>::type                          \
+              , typename byref<T>::type                                                             \
               , U &                                                                                 \
             >::type const                                                                           \
             operator OP(T &t, U &u)                                                                 \
@@ -674,7 +688,7 @@
             typename proto::result_of::make_expr<                                                   \
                 TAG                                                                                 \
               , lldomain                                                                            \
-              , typename proto::result_of::as_child<T, byref_domain>::type                          \
+              , typename byref<T>::type                                                             \
               , U const &                                                                           \
             >::type const                                                                           \
             operator OP(T &t, U const &u)                                                           \
