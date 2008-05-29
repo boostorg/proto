@@ -24,6 +24,7 @@
 #include <boost/type_traits/is_member_object_pointer.hpp>
 #include <boost/type_traits/add_const.hpp>
 #include <boost/type_traits/add_reference.hpp>
+#include <boost/function_types/result_type.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/utility/addressof.hpp>
 #include <boost/utility/result_of.hpp>
@@ -206,17 +207,23 @@ namespace boost { namespace proto
         struct result_of_
           : boost::result_of<T>
         {};
+        
+        template<typename T, typename U>
+        struct result_of_<T(U), typename enable_if<is_member_object_pointer<T> >::type>
+          : remove_reference<typename function_types::result_type<T>::type>
+        {};
 
-        template<typename T, typename U, typename V>
-        struct result_of_<T U::*(V), typename disable_if<is_function<typename remove_cv<T>::type> >::type>
-        {
-            typedef T type;
-        };
+        template<typename T, typename U>
+        struct result_of_<T(U &), typename enable_if<is_member_object_pointer<T> >::type>
+          : function_types::result_type<T>
+        {};
 
-        template<typename T, typename U, typename V>
-        struct result_of_<T U::*(V &), typename disable_if<is_function<typename remove_cv<T>::type> >::type>
+        template<typename T, typename U>
+        struct result_of_<T(U const &), typename enable_if<is_member_object_pointer<T> >::type>
         {
-            typedef T &type;
+            typedef typename
+                remove_reference<typename function_types::result_type<T>::type>::type const &
+            type;
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
