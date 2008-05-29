@@ -62,62 +62,68 @@ namespace boost { namespace proto
 {
     namespace detail
     {
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        struct any
+        namespace anyns
         {
-            any(...);
-            any operator=(any);
-            any operator[](any);
-            #define M0(Z, N, DATA) any operator()(BOOST_PP_ENUM_PARAMS_Z(Z, N, any BOOST_PP_INTERCEPT));
-            BOOST_PP_REPEAT(BOOST_PROTO_MAX_ARITY, M0, ~)
-            #undef M0
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            struct any
+            {
+                any(...);
+                any operator=(any);
+                any operator[](any);
+                #define M0(Z, N, DATA) any operator()(BOOST_PP_ENUM_PARAMS_Z(Z, N, any BOOST_PP_INTERCEPT));
+                BOOST_PP_REPEAT(BOOST_PROTO_MAX_ARITY, M0, ~)
+                #undef M0
 
-            operator int any::*();
+                template<typename T>
+                operator T &() const volatile;
 
-            any operator+();
-            any operator-();
-            any operator*();
-            any operator&();
-            any operator~();
-            any operator!();
-            any operator++();
-            any operator--();
-            any operator++(int);
-            any operator--(int);
+                any operator+();
+                any operator-();
+                any operator*();
+                any operator&();
+                any operator~();
+                any operator!();
+                any operator++();
+                any operator--();
+                any operator++(int);
+                any operator--(int);
 
-            any operator<<(any);
-            any operator>>(any);
-            any operator*(any);
-            any operator/(any);
-            any operator%(any);
-            any operator+(any);
-            any operator-(any);
-            any operator<(any);
-            any operator>(any);
-            any operator<=(any);
-            any operator>=(any);
-            any operator==(any);
-            any operator!=(any);
-            any operator||(any);
-            any operator&&(any);
-            any operator&(any);
-            any operator|(any);
-            any operator^(any);
-            any operator,(any);
-            any operator->*(any);
-
-            any operator<<=(any);
-            any operator>>=(any);
-            any operator*=(any);
-            any operator/=(any);
-            any operator%=(any);
-            any operator+=(any);
-            any operator-=(any);
-            any operator&=(any);
-            any operator|=(any);
-            any operator^=(any);
-        };
-
+                friend any operator<<(any, any);
+                friend any operator>>(any, any);
+                friend any operator*(any, any);
+                friend any operator/(any, any);
+                friend any operator%(any, any);
+                friend any operator+(any, any);
+                friend any operator-(any, any);
+                friend any operator<(any, any);
+                friend any operator>(any, any);
+                friend any operator<=(any, any);
+                friend any operator>=(any, any);
+                friend any operator==(any, any);
+                friend any operator!=(any, any);
+                friend any operator||(any, any);
+                friend any operator&&(any, any);
+                friend any operator&(any, any);
+                friend any operator|(any, any);
+                friend any operator^(any, any);
+                friend any operator,(any, any);
+                friend any operator->*(any, any);
+                
+                friend any operator<<=(any, any);
+                friend any operator>>=(any, any);
+                friend any operator*=(any, any);
+                friend any operator/=(any, any);
+                friend any operator%=(any, any);
+                friend any operator+=(any, any);
+                friend any operator-=(any, any);
+                friend any operator&=(any, any);
+                friend any operator|=(any, any);
+                friend any operator^=(any, any);
+            };
+        }
+        
+        using anyns::any;
+        
         ////////////////////////////////////////////////////////////////////////////////////////////
         template<typename T>
         struct as_mutable
