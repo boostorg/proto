@@ -136,13 +136,13 @@
         {
         #define BOOST_PROTO_DEFINE_DEEP_COPY_TYPE(Z, N, DATA)                                       \
             typename deep_copy_impl<                                                                \
-                BOOST_PROTO_UNCVREF(                                                                \
-                    typename Expr::BOOST_PP_CAT(proto_child, N)                                     \
-                )                                                                                   \
-            >::type
+                typename Expr::BOOST_PP_CAT(proto_child_ref, N)::proto_derived_expr                 \
+            >::type                                                                                 \
+            /**/
 
         #define BOOST_PROTO_DEFINE_DEEP_COPY_FUN(Z, N, DATA)                                        \
-            proto::deep_copy(expr.proto_base().BOOST_PP_CAT(child, N))
+            proto::deep_copy(expr.proto_base().BOOST_PP_CAT(child, N))                              \
+            /**/
 
         #define BOOST_PP_ITERATION_PARAMS_1 (3, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/deep_copy.hpp>))
         #include BOOST_PP_ITERATE()
