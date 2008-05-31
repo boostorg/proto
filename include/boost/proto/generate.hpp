@@ -55,7 +55,7 @@
             struct by_value_generator_;
 
         #define BOOST_PROTO_DEFINE_BY_VALUE_TYPE(Z, N, Expr)                                        \
-            typename expr_traits<Expr>::args::BOOST_PP_CAT(child_ref, N)::proto_derived_expr        \
+            typename uncvref<typename expr_traits<Expr>::args::BOOST_PP_CAT(child, N)>::type        \
             /**/
 
         #define BOOST_PROTO_DEFINE_BY_VALUE(Z, N, expr)                                             \
