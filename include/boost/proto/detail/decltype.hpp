@@ -17,6 +17,7 @@
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/mpl/if.hpp>
+#include <boost/type_traits/is_class.hpp>
 #include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/is_pointer.hpp>
@@ -24,7 +25,6 @@
 #include <boost/type_traits/is_member_object_pointer.hpp>
 #include <boost/type_traits/add_const.hpp>
 #include <boost/type_traits/add_reference.hpp>
-#include <boost/function_types/result_type.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/utility/addressof.hpp>
 #include <boost/utility/result_of.hpp>
@@ -327,6 +327,15 @@ namespace boost { namespace proto
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename T>
+        struct result_of_member;
+        
+        template<typename T, typename U>
+        struct result_of_member<T U::*>
+        {
+            typedef T type;
+        };
+
         template<typename T, typename Void = void>
         struct result_of_
           : boost::result_of<T>
@@ -334,19 +343,31 @@ namespace boost { namespace proto
         
         template<typename T, typename U>
         struct result_of_<T(U), typename enable_if<is_member_object_pointer<T> >::type>
-          : remove_reference<typename function_types::result_type<T>::type>
-        {};
+        {
+            typedef
+                typename result_of_member<T>::type
+            type;
+        };
 
         template<typename T, typename U>
         struct result_of_<T(U &), typename enable_if<is_member_object_pointer<T> >::type>
-          : function_types::result_type<T>
-        {};
+        {
+            typedef
+                typename add_reference<
+                    typename result_of_member<T>::type
+                >::type
+            type;
+        };
 
         template<typename T, typename U>
         struct result_of_<T(U const &), typename enable_if<is_member_object_pointer<T> >::type>
         {
-            typedef typename
-                remove_reference<typename function_types::result_type<T>::type>::type const &
+            typedef
+                typename add_reference<
+                    typename add_const<
+                        typename result_of_member<T>::type
+                    >::type
+                >::type
             type;
         };
 
