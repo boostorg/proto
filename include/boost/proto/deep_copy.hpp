@@ -46,7 +46,7 @@
                 template<typename Expr2>
                 static type call(Expr2 const &expr)
                 {
-                    return typename Expr::proto_domain()(expr_type::make(proto::value(expr)));
+                    return typename Expr::proto_domain()(expr_type::make(expr.proto_base().child0));
                 }
             };
         }

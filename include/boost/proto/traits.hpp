@@ -319,7 +319,7 @@
                 /// INTERNAL ONLY
                 ///
                 template<typename T2>
-                static reference call(T2 &t)
+                static T2 &call(T2 &t)
                 {
                     return t;
                 }
@@ -510,7 +510,8 @@
             /// <tt>result_of::right\<Expr\></tt> is equivalent to
             /// <tt>result_of::child_c\<Expr, 1\></tt>.
             template<typename Expr>
-            struct right : child_c<Expr, 1>
+            struct right
+              : child_c<Expr, 1>
             {};
 
         } // namespace result_of

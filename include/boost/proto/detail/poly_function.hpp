@@ -80,7 +80,7 @@
             arg(type t)
               : value(t)
             {}
-            
+
             operator type() const
             {
                 return this->value;
@@ -158,15 +158,22 @@
                 return impl();
             }
 
-            #define BOOST_PP_ITERATION_PARAMS_1 (3, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/detail/poly_function.hpp>))
+            #define BOOST_PP_ITERATION_PARAMS_1 (4, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/detail/poly_function.hpp>, 0))
             #include BOOST_PP_ITERATE()
         };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename PolyFunSig>
+        struct as_mono_function;
+
+        #define BOOST_PP_ITERATION_PARAMS_1 (4, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/detail/poly_function.hpp>, 1))
+        #include BOOST_PP_ITERATE()
 
     }}} // namespace boost::proto::detail
 
     #endif
 
-#else
+#elif 0 == BOOST_PP_ITERATION_FLAGS()
 
     #define N BOOST_PP_ITERATION()
 
@@ -203,6 +210,18 @@
                 return impl(BOOST_PP_ENUM(N, M0, ~));
                 #undef M0
             }
+
+    #undef N
+
+#elif 1 == BOOST_PP_ITERATION_FLAGS()
+
+    #define N BOOST_PP_ITERATION()
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+        template<typename PolyFun, BOOST_PP_ENUM_PARAMS(N, typename A)>
+        struct as_mono_function<PolyFun(BOOST_PP_ENUM_PARAMS(N, A))>
+          : PolyFun::template impl<BOOST_PP_ENUM_PARAMS(N, A)>
+        {};
 
     #undef N
 
