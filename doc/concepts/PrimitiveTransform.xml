@@ -84,7 +84,7 @@
   </valid-expression>
 
   <example-model>
-    <type name="boost::proto::transform::arg_c&lt; 0 &gt;" />
+    <type name="boost::proto::_child_c&lt; 0 &gt;" />
   </example-model>
 
 </concept>
