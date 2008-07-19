@@ -24,7 +24,10 @@
       pointer type where the return type Fn is a
       PolymorphicFunctionObject and the arguments are
       Transforms. is_callable&lt; Fn &gt;::value
-      must be true.
+      must be true. The CallableTransform, when applied,
+      has the effect of invoking the polymorphic function
+      object Fn, passing as arguments the result(s)
+      of applying transform(s) Tn.
     </para>
   </description>
 
