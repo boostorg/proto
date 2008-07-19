@@ -17,11 +17,17 @@
   </models-sentence>
 
   <description>
-    <para>A PrimitiveTransform is class type that
-    has an overloaded function call operator and
-    uses a narrow subset of the TR1.ResultOf protocol
-    for return type calculation. It takes three
-    parameters: expression, state and data.</para>
+    <para>
+      A PrimitiveTransform is class type that
+      has a nested class template called impl that takes
+      three template parameters representing an expression
+      type, a state type and a data type. Specializations
+      of the nested impl template are ternary monomorphic
+      function objects that accept expression, state, and
+      data parameters. The PrimitiveTransform is itself a
+      PolymorphicFunctionObject that is implemented in
+      terms of the nested impl template.
+    </para>
   </description>
 
   <notation variables="fn">
@@ -49,13 +55,11 @@
   </notation>
 
   <associated-type name="result_type">
-    <get-member-type name="type">
-      <apply-template name="typename Fn::template result">
-        <apply-function name="Fn">
-          <type name="Expr"/>
-          <type name="State"/>
-          <type name="Data"/>
-        </apply-function>
+    <get-member-type name="result_type">
+      <apply-template name="typename Fn::template impl">
+        <type name="Expr"/>
+        <type name="State"/>
+        <type name="Data"/>
       </apply-template>
     </get-member-type>
     <description>
@@ -63,8 +67,59 @@
     </description>
   </associated-type>
 
-  <valid-expression name="Function Call">
+  <valid-expression name="Polymorphic Function Call 1">
     <apply-function name="fn">
+      <sample-value>
+        <type name="Expr" />
+      </sample-value>
+    </apply-function>
+    <return-type>
+      <require-same-type testable="yes">
+        <type name="result_type"/>
+      </require-same-type>
+    </return-type>
+    <semantics>Applies the transform.</semantics>
+  </valid-expression>
+
+  <valid-expression name="Polymorphic Function Call 2">
+    <apply-function name="fn">
+      <sample-value>
+        <type name="Expr" />
+      </sample-value>
+      <sample-value>
+        <type name="State" />
+      </sample-value>
+    </apply-function>
+    <return-type>
+      <require-same-type testable="yes">
+        <type name="result_type"/>
+      </require-same-type>
+    </return-type>
+    <semantics>Applies the transform.</semantics>
+  </valid-expression>
+
+  <valid-expression name="Polymorphic Function Call 3">
+    <apply-function name="fn">
+      <sample-value>
+        <type name="Expr" />
+      </sample-value>
+      <sample-value>
+        <type name="State" />
+      </sample-value>
+      <sample-value>
+        <type name="Data" />
+      </sample-value>
+    </apply-function>
+    <return-type>
+      <require-same-type testable="yes">
+        <type name="result_type"/>
+      </require-same-type>
+    </return-type>
+    <semantics>Applies the transform.</semantics>
+  </valid-expression>
+
+  <valid-expression name="Monomorphic Function Call">
+    <apply-function name="typename Fn::template impl&lt; Expr, State, Data &gt;()">
       <sample-value>
         <type name="Expr" />
       </sample-value>
