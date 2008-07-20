@@ -20,7 +20,7 @@ and follow the instructions there for anonymous SVN access.
 Proto is a header-only template library, which means you don't need to alter
 your build scripts or link to any separate lib file to use it. All you need
 to do is `#include <boost/proto/proto.hpp>`. Or, you might decide to just
-include the core of Proto (`#include <boost/proto/proto.hpp>`) and whichever
+include the core of Proto (`#include <boost/proto/core.hpp>`) and whichever
 contexts and transforms you happen to use.
 
 [heading Requirements]

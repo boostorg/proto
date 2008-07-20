@@ -54,7 +54,7 @@ to make it a calculator by defining an evaluation context.
 No doubt you want your expression templates to actually /do/ something. One
 approach is to define an ['evaluation context]. The context is like a function
 object that associates behaviors with the node types in your expression tree.
-An example should make it clear.
+The following example should make it clear. It is explained below.
 
     struct calculator_context
       : proto::callable_context< calculator_context const >
@@ -78,48 +78,17 @@ An example should make it clear.
             return this->d2_;
         }
 
-        // Handle literals:
-        double operator()(proto::tag::terminal, double d) const
-        {
-            return d;
-        }
-
-        // Handle addition:
-        template< typename Left, typename Right >
-        double operator()(proto::tag::plus, Left const &left, Right const &right) const
-        {
-            return proto::eval(left, *this) + proto::eval(right, *this);
-        }
-
-        // Handle subtraction:
-        template< typename Left, typename Right >
-        double operator()(proto::tag::minus, Left const &left, Right const &right) const
-        {
-            return proto::eval(left, *this) - proto::eval(right, *this);
-        }
-
-        // Handle multiplication:
-        template< typename Left, typename Right >
-        double operator()(proto::tag::multiplies, Left const &left, Right const &right) const
-        {
-            return proto::eval(left, *this) * proto::eval(right, *this);
-        }
-
-        // Handle division:
-        template< typename Left, typename Right >
-        double operator()(proto::tag::divides, Left const &left, Right const &right) const
-        {
-            return proto::eval(left, *this) / proto::eval(right, *this);
-        }
-
     private:
         double d1_, d2_;
     };
 
-Notice how the binary arithmetic operations are handled. First the left and
-right operands are evaluated by invoking `proto::eval()`. After the left and
-right children are evaluated, the results are combined using the appropriate
-arithmetic operation.
+In `calculator_context`, we specify how Proto should evaluate the placeholder
+terminals by defining the appropriate overloads of the function call operator.
+For any other nodes in the expression tree (e.g., arithmetic operations or
+non-placeholder terminals), Proto will evaluate the expression in the "default"
+way. For example, a binary plus node is evaluated by first evaluating the left
+and right operands and adding the results. Proto's default evaluator uses the
+_typeof_ library to compute return types.
 
 Now that we have an evaluation context for our calculator, we can use it to
 evaluate our arithmetic expressions, as below:
@@ -133,44 +102,8 @@ evaluate our arithmetic expressions, as below:
     // This prints "10"
     std::cout << d << std::endl;
 
-[heading Default Expression Evaluation]
-
-You might notice that the `calculator_context` has a lot of boilerplate. It
-is fairly common for addition nodes to be handled by evaluating the left and
-right children and then adding the result, for instance. For this purpose,
-Boost.Proto provides the _default_context_, which gives the operators their usual
-meanings, and uses Boost.Typeof to deduce return types. In fact, the
-_callable_context_ from which our `calculator_context` inherits uses
-_default_context_ as a fall-back for any expression types you don't handle
-explicitly. We can use that fact to simplify our `calculator_context`
-considerably:
-
-    struct calculator_context
-      : proto::callable_context< calculator_context const >
-    {
-        calculator_context(double d1, double d2)
-          : d1_(d1), d2_(d2)
-        {}
-
-        // Define the result type of the calculator.
-        // (This makes the the calculator_context "callable".)
-        typedef double result_type;
-
-        // Handle the placeholders:
-        double operator()(proto::tag::terminal, placeholder1) const
-        {
-            return this->d1_;
-        }
-
-        double operator()(proto::tag::terminal, placeholder2) const
-        {
-            return this->d2_;
-        }
-
-    private:
-        double d1_, d2_;
-    };
-
-That's pretty simple!
+Later, we'll see how to define more interesting evaluation contexts and
+expression transforms that give you total control over how your expressions
+are evaluated.
 
 [endsect]
