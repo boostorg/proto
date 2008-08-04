@@ -30,18 +30,18 @@ is the tree transformation.
 
 You associate transforms with your grammar rules using _when_. For instance,
 you might want to promote all `int` terminals to `long`. You would say
-`when< terminal<int>, terminal<long>::type(_value) >`. Here,
-`terminal<long>::type(_value)` is an example of a Proto transform. It says to
-create an object of type `terminal<long>::type` and initialize it with the
-result of the `_value` transform. `_value` is a transform defined by Proto which
+`proto::when< proto::terminal<int>, proto::terminal<long>::type(proto::_value) >`. Here,
+`proto::terminal<long>::type(proto::_value)` is an example of a Proto transform. It says to
+create an object of type `proto::terminal<long>::type` and initialize it with the
+result of the `proto::_value` transform. `proto::_value` is a transform defined by Proto which
 extracts the value from a terminal expression.
 
 [note The transform above might look a little strange at first. It appears
 to be constructing a temporary object in place. In fact, it is a
-/function type/. Since `terminal<long>::type` and `_value` are types,
-`terminal<long>::type(_value)` is actually the type of a function that takes
-`_value` as a parameter and returns `terminal<long>::type`. That is immaterial;
-there is no such function in reality. Rather, Proto interprets this function
+/function type/. Since `proto::terminal<long>::type` and `proto::_value` are /types/,
+`proto::terminal<long>::type(proto::_value)` is actually the type of a function that takes
+`proto::_value` as a parameter and returns `proto::terminal<long>::type`. But no such
+function actually exists! Rather, Proto interprets this function
 type as a transform, the effect of which is described above. The resemblance
 to an in-place construction of a temporary object is intentional. It is a
 concise and natural notation for specifying transforms. Proto transforms use
@@ -51,8 +51,40 @@ A grammar decorated with transforms is a function object that takes three
 parameters:
 
 * `expr`    -- the Proto expression to transform
-* `state`   -- the initial state of the transformation
-* `data` -- any optional mutable state information
+* `state`   -- an optional initial state of the transformation
+* `data`    -- any optional mutable state information
+
+Many transforms do no use the state and data parameters, and you can pass
+dummy values for them or leave them off entirely. Later on we'll see where
+they are useful.
+
+In addition to being a function object, a grammar decorated with transforms
+is also a grammar. That is, it can be used as the second parameter to
+the _matches_ metafunction to see if an expression type matches the grammar.
+
+The first pararameter to the transform, `expr`, is a Proto expression. Its
+type /must/ match the grammar defined by the transform. It is an error to
+apply a transform to an expression that does not match the transform's
+grammar. If you try it, you're likely to get an ugly compiler error if you're
+lucky. If you're unlucky, it'll compile and do something weird at runtime.
+For instance, consider the following:
+
+  // A grammar that matches an int terminal, and a
+  // transform that promotes it to a long terminal.
+  typedef
+      proto::when<
+          proto::terminal<int>
+        , proto::terminal<long>::type(proto::_value)
+      >
+  Promote;
+
+  // A character terminal
+  proto::terminal<char>::type expr = {'a'};
+
+  // ERROR! The Promote transform expects an integer
+  // terminal, not a character terminal.
+  Promote promote;
+  proto::terminal<long>::type expr2 = promote(expr);
 
 Grammars with transforms are proper function objects, so you can use
 `boost::result_of<>` to calculate their return types. So, applying a
@@ -72,6 +104,42 @@ transform typically looks like this:
 
     // ... and apply Grammar's transform:
     result_type result = Grammar()(expr, state, data);
+
+[/====================================]
+[heading The State and Data Parameters]
+[/====================================]
+
+So in a transform, what are the `state` and `data` parameters used for?
+If you are familiar with the `std::accumulate()` standard algorithm,
+you know that it takes an input sequence, an initial state, and a
+binary function. The algorithm passes the initial state and the first
+element to the binary function to calculate a new state, which is
+then similarly combined with the second element, and so on. Users of
+functional programming languages know this operation as `fold`.
+
+Proto provides several variants of a `fold` transform that behaves
+analogously to `std::accumulate()`. The `fold` transform is described
+in detail later, but here we're just interested in the `state`
+parameter. Any transform that uses `fold` is going to require you
+to pass an initial state. That is what the second parameter of a
+transform is used for.
+
+The `data` parameter is a little different. It can be anything you
+want, and -- unlike the `state` parameter -- none of Proto's built-in
+transforms will touch it. Also unlike the `state` parameter, the
+`data` parameter will be passed around by non-const reference. You
+can use the `data` parameter to pass along data that your
+custom transforms might use or mutate.
+
+So the difference between `state` and `data` is that `state` is an
+accumulation variable that Proto will change, both in type and in
+value, during the transformation, whereas `data` is just a blob of
+bits that you would like available to your transforms. For instance,
+you might want to fold an expression tree to a Fusion list and do
+something locale-specific to each element before you put it in the
+list. In that case, your state parameter would be `fusion::nil`
+(i.e., an empty list), and the data parameter would be a
+`std::locale`.
 
 [/==========================================]
 [section Example: Calculator Arity Transform]
@@ -112,9 +180,9 @@ We can immediately write the calculator grammar as follows:
 We can read this as follows: a calculator expression is either placeholder 1,
 placeholder 2, some other terminal, or some unary or binary operator whose
 operands are calculator expressions. Recall that `proto::_` is a wildcard which
-matches anything. So `terminal< _ >` will match any terminal, and
-`unary_expr< _, CalcArity >` will match any unary expression
-for which the operand matches CalcArity (the `_` matches any operator
+matches anything. So `proto::terminal< _ >` will match any terminal, and
+`proto::unary_expr< _, CalcArity >` will match any unary expression
+for which the operand matches `CalcArity` (the `_` matches any operator
 tag).
 
 [/============================]
@@ -138,13 +206,13 @@ The total arity of a calculator expression is found by recursively evaluating
 the arity of all of the sub-expressions and taking the maximum.
 
 Let's look at the sub-expression for the placeholder `_1`. It is matched by this
-part of our grammar: `terminal< placeholder1 >`. We want to associate this
+part of our grammar: `proto::terminal< placeholder1 >`. We want to associate this
 part of our grammar with an arity of `1`. We do that by attaching a transform.
 Since the arity of an expression can be evaluated at compile time, let's use
 `mpl::int_<1>` to represent the arity of the first placeholder. The following
 attaches a transform that always evaluates to `mpl::int_<1>`:
 
-    when< terminal< placeholder1 >, mpl::int_<1>() >
+    proto::when< proto::terminal< placeholder1 >, mpl::int_<1>() >
 
 This grammar rule will match any `placeholder1` terminal, and will transform it
 to a (default-constructed) `mpl::int_<1>` object. As described previously,
@@ -155,11 +223,11 @@ into `mpl::int_<2>`, and other terminals into `mpl::int_<0>`.
 Next, let's write a transform for unary operators that returns the arity of the
 operand. It is simply:
 
-    when< unary_expr< _, CalcArity >, CalcArity(_child) >
+    proto::when< proto::unary_expr< _, CalcArity >, CalcArity(proto::_child) >
 
-The transform `CalcArity(_child)` recursively applies the `CalcArity`
+The transform `CalcArity(proto::_child)` recursively applies the `CalcArity`
 transform to the child node of the unary expression. As you might have noticed,
-`CalcArity(_child)` is another function type, but Proto interprets this one
+`CalcArity(proto::_child)` is another function type, but Proto interprets this one
 differently. Rather than trying to construct a `CalcArity` object, Proto
 knows this is a function object and invokes it instead.
 
@@ -170,8 +238,8 @@ function to call, depending on whether `foo` is a type or a function. Proto
 can't know in general which is the case, so it uses a trait, `proto::is_callable<>`,
 to differentiate. `is_callable< mpl::int_<1> >::value` is false so `mpl::int_<1>()`
 is an object to construct, but `is_callable< CalcArity >::value` is true so
-`CalcArity(_child)` is a function to call. (`is_callable< CalcArity >::value` is true
-because `CalcArity` inherits from `proto::or_<>`, which is callable.)]
+`CalcArity(proto::_child)` is a function to call. (`is_callable< CalcArity >::value`
+is true because `CalcArity` inherits from `proto::or_<>`, which is callable.)]
 
 [/
     That begs the question, what does `unary_expr<>`'s transform do? Well,
@@ -235,35 +303,39 @@ because `CalcArity` inherits from `proto::or_<>`, which is callable.)]
 
 The arity of a binary operator is the maximum of the arity of the left and
 right operands. We can specify this with the help of `mpl::max<>`, which is a
-so-called meta-function that computes the maximum of two compile-time integers.
+so-called metafunction that computes the maximum of two compile-time integers.
 The transform is described below:
 
-    when<
-        binary_expr< _, CalcArity, CalcArity >
-      , mpl::max< CalcArity(_left), CalcArity(_right) >()
+    proto::when< proto::binary_expr< _, CalcArity, CalcArity >,
+       mpl::max< CalcArity(proto::_left), CalcArity(proto::_right) >()
     >
 
 The above says to match binary calculator expressions and compute their
 arity by first computing the arity of the left and right children and then
 taking their maximum.
 
+[def _X_ [~X]]
+[def _Y_ [~Y]]
+[def _Z_ [~Z]]
+
 There's a lot going on in the above transform, so let's take it one piece
-at a time, starting with the parts we know. `CalcArity(_left)`
+at a time, starting with the parts we know. `CalcArity(proto::_left)`
 will calculate the arity of the left child, returning a compile-time integer.
-Likewise for `CalcArity(_right)`. What is new is that these two
+Likewise for `CalcArity(proto::_right)`. What is new is that these two
 transforms are nested within another: `mpl::max<...>()`. Proto notices that
 `mpl::max<...>` is not callable, so this transform is interpreted as an
 object to construct rather than a function to invoke. Using meta-programming
 tricks, Proto disassembles the `mpl::max<...>` template looking for nested
 Proto transforms to apply. It finds two and applies them, resulting in
-`mpl::max< mpl::int_<X>, mpl::int_<Y> >`.
+`mpl::max< mpl::int_<_X_>, mpl::int_<_Y_> >`.
 
 Having first applied any nested transforms, Proto then looks to see if
-`mpl::max<X, Y>` has a nested `::type` typedef. This is a common convention
-used by meta-functions. In this case, `mpl::max<>::type` is a typedef
-for `mpl::int_< Z >` where `Z` is the maximum of `X` and `Y`. The trailing
-`()` on the transform indicates that the result should be default-constructed,
-so this transform returns `mpl::int_<Z>()`. And we're done.
+`mpl::max< mpl::int_<_X_>, mpl::int_<_Y_> >` has a nested `::type` typedef.
+This is a common convention used by metafunctions. In this case,
+`mpl::max<...>::type` is a typedef for `mpl::int_< _Z_ >` where `_Z_` is the
+maximum of `_X_` and `_Y_`. The trailing `()` on the transform indicates that
+the result should be default-constructed, so this transform returns 
+`mpl::int_<_Z_>()`. And we're done.
 
 [note Had `mpl::max<>` not had a nested `::type` typedef, the transform
 would have created and returned a default-constructed `mpl::max<>` object
@@ -291,7 +363,8 @@ This displays the following:
 2
 ]
 
-(Aside: this uses the fact that `mpl::int_<1>` has a conversion to `int(1)`.)
+(Aside: the output statements use the fact that `mpl::int_<_X_>`
+has a conversion to `int(_X_)`.)
 
 [endsect]
 
@@ -304,31 +377,37 @@ These were implemented in terms of more primitive transforms provided by
 Proto, such as `_child`, `_left`, and `_right`. This section describes those
 transforms and others in detail.
 
+[/
+
+Why is this here??
+
 All the transforms defined in this section are of the following form:
 
-    struct some_transform : callable
+[def _some_transform_ [~some_transform]]
+
+    struct _some_transform_ : proto::transform< _some_transform_ >
     {
-        template<typename Sig>
-        struct result;
-
-        template<typename This, typename Expr, typename State, typename Data>
-        struct result<This(Expr, State, Data)>
+        template<typename Expr, typename State, typename Date>
+        struct impl : proto::transform_impl< Expr, State, Data >
         {
-            typedef ... type;
+            typedef ... result_type;
+
+            result_type operator()(
+                typename impl::expr_param expr
+              , typename impl::state_param state
+              , typename impl::data_param data
+            ) const
+            {
+                return ...;
+            }
         };
-
-        template<typename Expr, typename State, typename Data>
-        typename result<some_transform(Expr, State, Data)>::type
-        operator()(Expr const &expr, State const &state, Data &data) const
-        {
-            return ...;
-        }
     };
 
-So defined, `some_transform` is a transform "in the raw". It can be used
-without needing to explicitly specify any arguments to the transform. These
-are the building blocks from which you can compose larger transforms using
-function types.
+So defined, `_some_transform_` is a transform "in the raw", just like
+`proto::_value` or `proto::_child`. These transforms are the building
+blocks from which you can compose larger transforms using function types.
+
+]
 
 [section:child_c_and_friends [^_value], [^_child], [^_left], and [^_right]]
 
@@ -1183,13 +1262,12 @@ out of smaller transforms using function types.
 We've also seen the primitive transforms that Proto provides.
 So-called primitive transforms can be used without specifying
 arguments, like `_child0` which returns the first child of the
-current node. But primitive transforms are not special in any way.
-They are merely ternary function objects that take the current
-expression, state and data as arguments.
+current node. In this section we'll see how to author your own
+primitive transforms.
 
-You can define your own primitive transforms. You might want to
-do this if your transform is complicated and composing it out
-of primitives becomes unwieldy. You might also do this
+There are a few reasons why you might want to write your own
+primitive transforms. For instance, your transform may be complicated and 
+composing it out of primitives becomes unwieldy. You might also need
 to work around compiler bugs on legacy compilers that makes
 composing transforms using function types problematic. Finally,
 you might also decide to define your own primitive transforms
@@ -1198,35 +1276,34 @@ primitive transform directly without having to process arguments
 or differentiate callable transforms from object transforms,
 primitive transforms are more efficient.
 
-To define your own primitive transform, merely define a ternary
-function object that accepts an expression, a state and a data.
-Here, for example, is how Proto defines the `_child_c<>` transform:
+Your primitive transforms will inherit from `proto::transform<>`
+and have a nested `impl<>` template that inherits from 
+`proto::transform_impl<>`. For example, is how Proto defines
+the `_child_c<>` transform:
 
     namespace boost { namespace proto
     {
-        // A transform that returns the I-th child
+        // A PrimitiveTransform that returns I-th child of the current
+        // expression.
         template<int I>
-        struct _child_c : callable
+        struct _child_c : transform<_child_c<I> >
         {
-            // Nested "result" template, used by
-            // boost::result_of<> to compute the
-            // return type of the function.
-            template<typename Sig>
-            struct result;
-
-            template<typename This, typename Expr, typename State, typename Data>
-            struct result<This(Expr, State, Data)>
-              : proto::result_of::child_c<Expr, I>
-            {};
-
-            // Function call operator that actually
-            // executes the transform.
             template<typename Expr, typename State, typename Data>
-            typename proto::result_of::child_c<Expr, I>::const_reference
-            operator ()(Expr const &expr, State const &, Data &) const
+            struct impl : transform_impl<Expr, State, Data>
             {
-                return proto::child_c<I>(expr);
-            }
+                typedef
+                    typename result_of::child_c<Expr, I>::type
+                result_type;
+
+                result_type operator ()(
+                    typename impl::expr_param expr
+                  , typename impl::state_param state
+                  , typename impl::data_param data
+                ) const
+                {
+                    return proto::child_c<I>(expr);
+                }
+            };
         };
 
         // Note that _child_c<I> is callable, so that
@@ -1238,15 +1315,33 @@ Here, for example, is how Proto defines the `_child_c<>` transform:
         {};
     }}
 
-There is nothing particularly special about the definition of
-`_child_c<>`. It is just an ordinary polymorphic function object. The
-only interesting bit is the `is_callable<>` specialization, which
-will be described in the section called "Making Your Transform
-Callable".
+The `proto::transform<>` base class provides the `operator()` overloads
+and the nested `result<>` template that make your transform a valid
+TR1-style function object that works with `boost::result_of<>`. These
+are all implemented in terms of the nested `impl<>` template you define.
 
-Once you have defined such a ternary function object, you can use
-it as a transform without any arguments and Proto will automatically
-pass it the current expression, state and data parameters.
+The `proto::transform_impl<>` base class is merely a convenience. It
+provides some nested typedefs that are generally useful. The are
+specified in the table below:
+
+[table proto::transform_impl<Expr, State, Data> typedefs
+[[typedef][Equivalen To]]
+[[`expr`][`typename remove_reference<Expr>::type`]]
+[[`state`][`typename remove_reference<State>::type`]]
+[[`data`][`typename remove_reference<Data>::type`]]
+[[`expr_param`][`typename add_reference<typename add_const<Expr>::type>::type`]]
+[[`state_param`][`typename add_reference<typename add_const<State>::type>::type`]]
+[[`data_param`][`typename add_reference<typename add_const<Data>::type>::type`]]
+]
+
+You'll notice that `_child_c::impl::operator()` takes arguments of types
+`expr_param`, `state_param`, and `data_param`. The typedefs make it easy to
+accepts arguments by reference or const reference accordingly.
+
+The only other interesting bit is the `is_callable<>` specialization, which
+will be described in the section called
+[link boost_proto.users_guide.expression_transformation.is_callable 
+"Making Your Transform Callable"].
 
 [endsect]
 

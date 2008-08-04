@@ -107,5 +107,5 @@ boostbook standalone
         # better use SVG's instead:
         # <format>pdf:<xsl:param>admon.graphics.extension=".svg"
 
-        <dependency>protodoc
+#        <dependency>protodoc
     ;
