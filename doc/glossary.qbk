@@ -18,13 +18,18 @@
        `R` is treated as a polymorphic function object and the
        arguments are treated as transforms that yield the
        arguments to the function object.] ]
+  [ [domain-specific language]
+      [A programming language that targets a particular problem
+       space by providing programming idioms, abstractions and
+       constructs that match the constructs within that problem
+       space.]]
   [ [expression]
       [A heterogeneous tree where each node is either an
        instantiation of `boost::proto::expr<>` or some type
        that is an extension (via `boost::proto::extends<>`
        or `BOOST_PROTO_EXTENDS()`) of such an instantiation.]]
   [ [grammar]
-      [A grammar is a type that describes a subset of all
+      [A grammar is a type that describes a subset of
        expression types. Expressions in a domain must conform
        to that domain's grammar. The `proto::matches<>`
        metafunction evaluates whether an expression type matches

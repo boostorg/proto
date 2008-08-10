@@ -5,7 +5,7 @@
  / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  /]
 
-[section:expression_evaluation Expression Evaluation: Imparting Behaviors Within A Context]
+[section:expression_evaluation Expression Evaluation: Imparting Behaviors With A Context]
 
 Once you have constructed a Proto expression tree, either by using Proto's
 operator overloads or with _make_expr_ and friends, you probably want to
@@ -124,7 +124,7 @@ All context classes have roughly the following form:
         // A nested eval<> class template
         template<
             typename Expr
-          , typename Tag = typename Expr::proto_tag
+          , typename Tag = typename tag_of<Expr>::type
         >
         struct eval;
 
@@ -320,7 +320,11 @@ template, as follows:
     {
         template<typename Expr>
         struct eval
-          : default_eval<Expr, default_context const, typename Expr::proto_tag>
+          : default_eval<
+                Expr
+              , default_context const
+              , typename tag_of<Expr>::type
+            >
         {};
     };
 

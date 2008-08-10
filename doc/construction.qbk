@@ -35,9 +35,10 @@ tree -- branches, leaves and all.
 The _expr_ template makes up the nodes in expression trees. The first template
 parameter is the node type; in this case, `proto::tag::terminal`. That means
 that `_1` is a leaf-node in the expression tree. The second template parameter
-is a list of child types. Terminals will always have only one type in the
-type list. The last parameter is the arity of the expression. Terminals have
-arity 0, unary expressions have arity 1, etc.
+is a list of child types, or in the case of terminals, the type of the terminal's
+value. Terminals will always have only one type in the type list. The last 
+parameter is the arity of the expression. Terminals have arity 0, unary 
+expressions have arity 1, etc.
 
 The _expr_ struct is defined as follows:
 
@@ -47,7 +48,8 @@ The _expr_ struct is defined as follows:
     template< typename Tag, typename Args >
     struct expr< Tag, Args, 1 >
     {
-        typename Args::child0 child0;
+        typedef typename Args::child0 proto_child0;
+        proto_child0 child0;
         // ...
     };
 
@@ -65,21 +67,12 @@ because `placeholder1` is also an aggregate.
 
 Once we have some Proto terminals, expressions involving those terminals build
 expression trees for us. Proto defines overloads for each of C++'s overloadable
-operators in the `boost::proto` namespace. As long
-as one operand is a Proto expression, the result of the operation is a tree
-node representing that operation.[footnote There are a couple of exceptions to
-this rule. In ["`int x; x = _1`], the assignment isn't a Proto expression, even
-though the right hand operand /is/ a Proto expression. That is because in C++,
-the assignment operator must be a member function.
-The same is also true for the subscript operator and the function call
-operator, as in ["`int *x; x[_1];`] and ["`std::sin(_1);`]. C++ also has special
-rules for overloads of `operator->` that make it useless for
-building expression templates, so Proto does not overload it. It does, however,
-overload `operator->*`.]
+operators in the `boost::proto` namespace. As long as one operand is a Proto
+expression, the result of the operation is a tree node representing that operation.
 
 [note The _expr_ struct lives in the `boost::proto` namespace, as do all of
-Proto's operator overloads. The overloads are found via ADL (Argument-Dependent
-Lookup). That is why expressions must be "tainted" with Proto-ness for Proto to
+Proto's operator overloads. The overloads are found via ADL (argument-dependent
+lookup). That is why expressions must be "tainted" with Proto-ness for Proto to
 be able to build trees out of expressions.]
 
 As a result of Proto's operator overloads, we can say:
@@ -87,15 +80,74 @@ As a result of Proto's operator overloads, we can say:
     -_1;        // OK, build a unary-negate tree node
     _1 + 42;    // OK, build a binary-plus tree node
 
+[/=========================================================]
+[heading Assignment, Subscript, and Function Call Operators]
+[/=========================================================]
+
+The _expr_ type defines overloads of `operator=`, `operator[]`, and `operator()`
+as member functions. That's because these operators cannot be overloaded at
+namespace scope. Because _expr_ defines them as member functions, the following
+are valid Proto expressions:
+
+    _1 = 5;     // OK, builds a binary assign tree node
+    _1[6];      // OK, builds a binary subscript tree node
+    _1();       // OK, builds a unary function tree node
+    _1(7);      // OK, builds a binary function tree node
+    _1(8,9);    // OK, builds a ternary function tree node
+    // ... etc.
+
+For the first two lines, assigment and subscript, it should be fairly unsurprising
+that the resulting expression node should be binary. After all, there are
+two operands in each expression. It may be surprising at first that what appears
+to be a function call with no arguments, `_1()`, actually creates an expression
+node with one child. The child is `_1` itself. Likewise, the expression `_1(7)`
+has two children: `_1` and `2`.
+
+Because these operators can only be defined as member functions of _expr_, the
+following expressions are invalid:
+
+    int i;
+    i = _1;         // ERROR: cannot assign _1 to an int
+
+    int *p;
+    p[_1];          // ERROR: cannot use _1 as an index
+
+    std::sin(_1);   // ERROR: cannot call std::sin() with _1
+
+Also, C++ has special rules for overloads of `operator->` that make it useless
+for building expression templates, so Proto does not overload it.
+
+[/==============================]
+[heading The Address-Of Operator]
+[/==============================]
+
+Proto overloads the address-of operator for expression types, so that the
+following code creates a new unary address-of tree node:
+
+    &_1;    // OK, creates a unary address-of tree node
+
+It does /not/ return the address of the `_1` object. However, there is
+special code in Proto such that a unary address-of node is implicitly
+convertible to a pointer to its child. In other words, the following
+code works and does what you might expect, but not in the obvious way:
+
+    typedef
+        proto::terminal< placeholder1 >::type
+    placeholder1_type;
+
+    placeholder1_type const _1 = {{}};
+    placeholder1_type const * p = &_1; // OK, &_1 implicitly converted
+
 [/================================]
 [heading Building Expression Trees]
 [/================================]
 
-The `_1` node is an _expr_ type, and new nodes created with this type are
-also _expr_ types. To use Proto effectively, you won't have to bother yourself with the
-actual types that Proto generates. These are details, but you're likely to
-encounter these types in compiler error messages, so it's helpful to be familiar
-with them. The types look like this:
+The `_1` node is an instantiation of _expr_, and expressions containing
+`_1` are also instantiations of _expr_. To use Proto effectively, you
+won't have to bother yourself with the actual types that Proto generates.
+These are details, but you're likely to encounter these types in compiler
+error messages, so it's helpful to be familiar with them. The types look
+like this:
 
     // The type of the expression -_1
     typedef
@@ -336,7 +388,7 @@ not describe a flat sequence of terminals --- it describes a binary tree. We
 can treat it as a flat sequence of terminals, however, using Proto's _flatten_
 function. _flatten_ returns a view which makes a tree appear as a flat Fusion
 sequence. If the top-most node has a tag type `T`, then the elements of the
-flattened sequence are the child nodes that do *not* have tag type `T`. This
+flattened sequence are the child nodes that do /not/ have tag type `T`. This
 process is evaluated recursively. So the above can correctly be written as:
 
     proto::terminal<int>::type const _1 = {1};
@@ -361,196 +413,196 @@ The above invocation of `fusion::for_each()` displays the following:
 
 [endsect]
 
-[/===============================================================]
-[section:tags_and_meta_functions Operator Tags and Meta-Functions]
-[/===============================================================]
+[/=============================================================]
+[section:tags_and_metafunctions Operator Tags and Metafunctions]
+[/=============================================================]
 
 The following table lists the overloadable C++ operators, the Proto tag types
-for each, and the name of the Proto meta-function for generating the
-corresponding Proto expression nodes. The meta-functions are also usable as
+for each, and the name of the Proto metafunction for generating the
+corresponding Proto expression types. The metafunctions are also usable as
 grammars for matching such nodes, as well as pass-through transforms, as
 explained in later sections.
 
-[table Operators, Tags and Meta-Functions
+[table Operators, Tags and Metafunctions
     [[Operator]
     [Proto Tag]
-    [Proto Meta-Function]]
+    [Proto Metafunction]]
 
     [[unary `+`]
-    [`tag::unary_plus`]
-    [`unary_plus<>`]]
+    [`proto::tag::unary_plus`]
+    [`proto::unary_plus<>`]]
 
     [[unary `-`]
-    [`tag::negate`]
-    [`negate<>`]]
+    [`proto::tag::negate`]
+    [`proto::negate<>`]]
 
     [[unary `*`]
-    [`tag::dereference`]
-    [`dereference<>`]]
+    [`proto::tag::dereference`]
+    [`proto::dereference<>`]]
 
     [[unary `~`]
-    [`tag::complement`]
-    [`complement<>`]]
+    [`proto::tag::complement`]
+    [`proto::complement<>`]]
 
     [[unary `&`]
-    [`tag::address_of`]
-    [`address_of<>`]]
+    [`proto::tag::address_of`]
+    [`proto::address_of<>`]]
 
     [[unary `!`]
-    [`tag::logical_not`]
-    [`logical_not<>`]]
+    [`proto::tag::logical_not`]
+    [`proto::logical_not<>`]]
 
     [[unary prefix `++`]
-    [`tag::pre_inc`]
-    [`pre_inc<>`]]
+    [`proto::tag::pre_inc`]
+    [`proto::pre_inc<>`]]
 
     [[unary prefix `--`]
-    [`tag::pre_dec`]
-    [`pre_dec<>`]]
+    [`proto::tag::pre_dec`]
+    [`proto::pre_dec<>`]]
 
     [[unary postfix `++`]
-    [`tag::post_inc`]
-    [`post_inc<>`]]
+    [`proto::tag::post_inc`]
+    [`proto::post_inc<>`]]
 
     [[unary postfix `--`]
-    [`tag::post_dec`]
-    [`post_dec<>`]]
+    [`proto::tag::post_dec`]
+    [`proto::post_dec<>`]]
 
     [[binary `<<`]
-    [`tag::shift_left`]
-    [`shift_left<>`]]
+    [`proto::tag::shift_left`]
+    [`proto::shift_left<>`]]
 
     [[binary `>>`]
-    [`tag::shift_right`]
-    [`shift_right<>`]]
+    [`proto::tag::shift_right`]
+    [`proto::shift_right<>`]]
 
     [[binary `*`]
-    [`tag::multiplies`]
-    [`multiplies<>`]]
+    [`proto::tag::multiplies`]
+    [`proto::multiplies<>`]]
 
     [[binary `/`]
-    [`tag::divides`]
-    [`divides<>`]]
+    [`proto::tag::divides`]
+    [`proto::divides<>`]]
 
     [[binary `%`]
-    [`tag::modulus`]
-    [`modulus<>`]]
+    [`proto::tag::modulus`]
+    [`proto::modulus<>`]]
 
     [[binary `+`]
-    [`tag::plus`]
-    [`plus<>`]]
+    [`proto::tag::plus`]
+    [`proto::plus<>`]]
 
     [[binary `-`]
-    [`tag::minus`]
-    [`minus<>`]]
+    [`proto::tag::minus`]
+    [`proto::minus<>`]]
 
     [[binary `<`]
-    [`tag::less`]
-    [`less<>`]]
+    [`proto::tag::less`]
+    [`proto::less<>`]]
 
     [[binary `>`]
-    [`tag::greater`]
-    [`greater<>`]]
+    [`proto::tag::greater`]
+    [`proto::greater<>`]]
 
     [[binary `<=`]
-    [`tag::less_equal`]
-    [`less_equal<>`]]
+    [`proto::tag::less_equal`]
+    [`proto::less_equal<>`]]
 
     [[binary `>=`]
-    [`tag::greater_equal`]
-    [`greater_equal<>`]]
+    [`proto::tag::greater_equal`]
+    [`proto::greater_equal<>`]]
 
     [[binary `==`]
-    [`tag::equal_to`]
-    [`equal_to<>`]]
+    [`proto::tag::equal_to`]
+    [`proto::equal_to<>`]]
 
     [[binary `!=`]
-    [`tag::not_equal_to`]
-    [`not_equal_to<>`]]
+    [`proto::tag::not_equal_to`]
+    [`proto::not_equal_to<>`]]
 
     [[binary `||`]
-    [`tag::logical_or`]
-    [`logical_or<>`]]
+    [`proto::tag::logical_or`]
+    [`proto::logical_or<>`]]
 
     [[binary `&&`]
-    [`tag::logical_and`]
-    [`logical_and<>`]]
+    [`proto::tag::logical_and`]
+    [`proto::logical_and<>`]]
 
     [[binary `&`]
-    [`tag::bitwise_and`]
-    [`bitwise_and<>`]]
+    [`proto::tag::bitwise_and`]
+    [`proto::bitwise_and<>`]]
 
     [[binary `|`]
-    [`tag::bitwise_or`]
-    [`bitwise_or<>`]]
+    [`proto::tag::bitwise_or`]
+    [`proto::bitwise_or<>`]]
 
     [[binary `^`]
-    [`tag::bitwise_xor`]
-    [`bitwise_xor<>`]]
+    [`proto::tag::bitwise_xor`]
+    [`proto::bitwise_xor<>`]]
 
     [[binary `,`]
-    [`tag::comma`]
-    [`comma<>`]]
+    [`proto::tag::comma`]
+    [`proto::comma<>`]]
 
     [[binary `->*`]
-    [`tag::mem_ptr`]
-    [`mem_ptr<>`]]
+    [`proto::tag::mem_ptr`]
+    [`proto::mem_ptr<>`]]
 
     [[binary `=`]
-    [`tag::assign`]
-    [`assign<>`]]
+    [`proto::tag::assign`]
+    [`proto::assign<>`]]
 
     [[binary `<<=`]
-    [`tag::shift_left_assign`]
-    [`shift_left_assign<>`]]
+    [`proto::tag::shift_left_assign`]
+    [`proto::shift_left_assign<>`]]
 
     [[binary `>>=`]
-    [`tag::shift_right_assign`]
-    [`shift_right_assign<>`]]
+    [`proto::tag::shift_right_assign`]
+    [`proto::shift_right_assign<>`]]
 
     [[binary `*=`]
-    [`tag::multiplies_assign`]
-    [`multiplies_assign<>`]]
+    [`proto::tag::multiplies_assign`]
+    [`proto::multiplies_assign<>`]]
 
     [[binary `/=`]
-    [`tag::divides_assign`]
-    [`divides_assign<>`]]
+    [`proto::tag::divides_assign`]
+    [`proto::divides_assign<>`]]
 
     [[binary `%=`]
-    [`tag::modulus_assign`]
-    [`modulus_assign<>`]]
+    [`proto::tag::modulus_assign`]
+    [`proto::modulus_assign<>`]]
 
     [[binary `+=`]
-    [`tag::plus_assign`]
-    [`plus_assign<>`]]
+    [`proto::tag::plus_assign`]
+    [`proto::plus_assign<>`]]
 
     [[binary `-=`]
-    [`tag::minus_assign`]
-    [`minus_assign<>`]]
+    [`proto::tag::minus_assign`]
+    [`proto::minus_assign<>`]]
 
     [[binary `&=`]
-    [`tag::bitwise_and_assign`]
-    [`bitwise_and_assign<>`]]
+    [`proto::tag::bitwise_and_assign`]
+    [`proto::bitwise_and_assign<>`]]
 
     [[binary `|=`]
-    [`tag::bitwise_or_assign`]
-    [`bitwise_or_assign<>`]]
+    [`proto::tag::bitwise_or_assign`]
+    [`proto::bitwise_or_assign<>`]]
 
     [[binary `^=`]
-    [`tag::bitwise_xor_assign`]
-    [`bitwise_xor_assign<>`]]
+    [`proto::tag::bitwise_xor_assign`]
+    [`proto::bitwise_xor_assign<>`]]
 
     [[binary subscript]
-    [`tag::subscript`]
-    [`subscript<>`]]
+    [`proto::tag::subscript`]
+    [`proto::subscript<>`]]
 
     [[ternary `?:`]
-    [`tag::if_else_`]
-    [`if_else_<>`]]
+    [`proto::tag::if_else_`]
+    [`proto::if_else_<>`]]
 
     [[n-ary function call]
-    [`tag::function`]
-    [`function<>`]]
+    [`proto::tag::function`]
+    [`proto::function<>`]]
 ]
 
 [endsect]
