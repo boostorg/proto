@@ -29,8 +29,11 @@ are to be transformed. Just as the grammar is defined recursively, so too
 is the tree transformation.
 
 You associate transforms with your grammar rules using _when_. For instance,
-you might want to promote all `int` terminals to `long`. You would say
-`proto::when< proto::terminal<int>, proto::terminal<long>::type(proto::_value) >`. Here,
+you might want to promote all `int` terminals to `long`. You would say the
+following:
+
+    proto::when< proto::terminal<int>, proto::terminal<long>::type(proto::_value) >
+
 `proto::terminal<long>::type(proto::_value)` is an example of a Proto transform. It says to
 create an object of type `proto::terminal<long>::type` and initialize it with the
 result of the `proto::_value` transform. `proto::_value` is a transform defined by Proto which
@@ -38,25 +41,25 @@ extracts the value from a terminal expression.
 
 [note The transform above might look a little strange at first. It appears
 to be constructing a temporary object in place. In fact, it is a
-/function type/. Since `proto::terminal<long>::type` and `proto::_value` are /types/,
-`proto::terminal<long>::type(proto::_value)` is actually the type of a function that takes
-`proto::_value` as a parameter and returns `proto::terminal<long>::type`. But no such
-function actually exists! Rather, Proto interprets this function
-type as a transform, the effect of which is described above. The resemblance
-to an in-place construction of a temporary object is intentional. It is a
-concise and natural notation for specifying transforms. Proto transforms use
-function types extensively, as we'll see.]
+/function type/. Since `proto::terminal<long>::type` and `proto::_value`
+are types, `proto::terminal<long>::type(proto::_value)` is actually the type
+of a function that takes `proto::_value` as a parameter and returns 
+`proto::terminal<long>::type`. But no such function actually exists! Rather,
+Proto interprets this function type as a transform, the effect of which is
+described above. The resemblance to an in-place construction of a temporary
+object is intentional. It is a concise and natural notation for specifying
+transforms. Proto transforms use function types extensively, as we'll see.]
 
 A grammar decorated with transforms is a function object that takes three
 parameters:
 
 * `expr`    -- the Proto expression to transform
-* `state`   -- an optional initial state of the transformation
+* `state`   -- an optional initial state for the transformation
 * `data`    -- any optional mutable state information
 
 Many transforms do no use the state and data parameters, and you can pass
-dummy values for them or leave them off entirely. Later on we'll see where
-they are useful.
+dummy values for them or leave them off entirely. Later on we'll describe
+the difference between them and see where they are useful.
 
 In addition to being a function object, a grammar decorated with transforms
 is also a grammar. That is, it can be used as the second parameter to
@@ -91,7 +94,7 @@ Grammars with transforms are proper function objects, so you can use
 transform typically looks like this:
 
     // Assuming we have an expression to transform,
-    // an initial state, and a data ...
+    // an initial state, and some auxiliary data ...
     Expr expr;
     State state;
     Data data;
@@ -1258,41 +1261,42 @@ Example:
 [/======================================================]
 
 In previous sections, we've seen how to compose larger transforms
-out of smaller transforms using function types.
-We've also seen the primitive transforms that Proto provides.
-So-called primitive transforms can be used without specifying
-arguments, like `_child0` which returns the first child of the
-current node. In this section we'll see how to author your own
-primitive transforms.
+out of smaller transforms using function types. The smaller transforms
+from which larger transforms are composed are /primitive transforms/,
+and Proto provides a bunch of common ones such as `_child0` and `_value`.
+In this section we'll see how to author your own primitive transforms.
 
-There are a few reasons why you might want to write your own
-primitive transforms. For instance, your transform may be complicated and 
-composing it out of primitives becomes unwieldy. You might also need
+[note There are a few reasons why you might want to write your own
+primitive transforms. For instance, your transform may be complicated,
+and composing it out of primitives becomes unwieldy. You might also need
 to work around compiler bugs on legacy compilers that makes
 composing transforms using function types problematic. Finally,
 you might also decide to define your own primitive transforms
 to improve compile times. Since Proto can simply invoke a
 primitive transform directly without having to process arguments
 or differentiate callable transforms from object transforms,
-primitive transforms are more efficient.
+primitive transforms are more efficient.]
 
-Your primitive transforms will inherit from `proto::transform<>`
+[def _N_ [~N]]
+
+Primitive transforms inherit from `proto::transform<>`
 and have a nested `impl<>` template that inherits from 
-`proto::transform_impl<>`. For example, is how Proto defines
-the `_child_c<>` transform:
+`proto::transform_impl<>`. For example, this is how Proto
+defines the `_child_c<_N_>` transform, which returns the
+_N_-th child of the current expression:
 
     namespace boost { namespace proto
     {
-        // A PrimitiveTransform that returns I-th child of the current
-        // expression.
-        template<int I>
-        struct _child_c : transform<_child_c<I> >
+        // A primitive transform that returns N-th child
+        // of the current expression.
+        template<int N>
+        struct _child_c : transform<_child_c<N> >
         {
             template<typename Expr, typename State, typename Data>
             struct impl : transform_impl<Expr, State, Data>
             {
                 typedef
-                    typename result_of::child_c<Expr, I>::type
+                    typename result_of::child_c<Expr, N>::type
                 result_type;
 
                 result_type operator ()(
@@ -1301,31 +1305,31 @@ the `_child_c<>` transform:
                   , typename impl::data_param data
                 ) const
                 {
-                    return proto::child_c<I>(expr);
+                    return proto::child_c<N>(expr);
                 }
             };
         };
 
-        // Note that _child_c<I> is callable, so that
+        // Note that _child_c<N> is callable, so that
         // it can be used with arguments, as:
         //   _child_c<0>(_child_c<1>)
-        template<int I>
-        struct is_callable<_child_c<I> >
+        template<int N>
+        struct is_callable<_child_c<N> >
           : mpl::true_
         {};
     }}
 
 The `proto::transform<>` base class provides the `operator()` overloads
 and the nested `result<>` template that make your transform a valid
-TR1-style function object that works with `boost::result_of<>`. These
-are all implemented in terms of the nested `impl<>` template you define.
+function object. These are implemented in terms of the nested `impl<>`
+template you define.
 
-The `proto::transform_impl<>` base class is merely a convenience. It
+The `proto::transform_impl<>` base class is a convenience. It
 provides some nested typedefs that are generally useful. The are
 specified in the table below:
 
 [table proto::transform_impl<Expr, State, Data> typedefs
-[[typedef][Equivalen To]]
+[[typedef][Equivalent To]]
 [[`expr`][`typename remove_reference<Expr>::type`]]
 [[`state`][`typename remove_reference<State>::type`]]
 [[`data`][`typename remove_reference<Data>::type`]]
@@ -1336,12 +1340,12 @@ specified in the table below:
 
 You'll notice that `_child_c::impl::operator()` takes arguments of types
 `expr_param`, `state_param`, and `data_param`. The typedefs make it easy to
-accepts arguments by reference or const reference accordingly.
+accept arguments by reference or const reference accordingly.
 
 The only other interesting bit is the `is_callable<>` specialization, which
-will be described in the section called
+will be described in the
 [link boost_proto.users_guide.expression_transformation.is_callable 
-"Making Your Transform Callable"].
+next section].
 
 [endsect]
 
@@ -1359,7 +1363,7 @@ so that you know when you need to specialize `is_callable<>`.
 
 The first thing to know is that templates are not considered callable
 by default. This is true ['even if the template inherits from
-`proto::callable`]. Consider the following erroneous transform:
+`proto::callable`]. Consider the following erroneous callable transform:
 
     // Proto can't tell this defines a
     // callable transform!
@@ -1387,10 +1391,10 @@ will not compile.
 
 [note Why can't Proto tell that `times2<int>` is callable? After all,
 it inherits from `proto::callable`, and that is detectable, right?
-In fact, determining whether some type `X<Y>` inherits from
+The problem is that merely asking whether some type `X<Y>` inherits from
 `callable` will cause the template `X<Y>` to be instantiated. That's a
 problem for a type like `std::vector<_value(_child1)>()`, which is a valid
-transform that default-constructs a particular instantiation of
+(object) transform that default-constructs a particular instantiation of
 `std::vector<>`. But `std::vector<>` will not suffer to be instantiated
 with `_value(_child1)` as a template parameter! As a result, Proto has
 to assume that a type `X<Y>` represents an object transform and not
@@ -1449,7 +1453,7 @@ You could add an extra dummy template parameter that defaults
 to `proto::callable`:
 
     // Proto will recognize this as callable
-    template<typename T, typename Dummy = callable>
+    template<typename T, typename Dummy = proto::callable>
     struct times2 : callable
     {
         typedef T result_type;
