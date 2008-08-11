@@ -124,7 +124,7 @@ All context classes have roughly the following form:
         // A nested eval<> class template
         template<
             typename Expr
-          , typename Tag = typename tag_of<Expr>::type
+          , typename Tag = typename proto::tag_of<Expr>::type
         >
         struct eval;
 
@@ -160,45 +160,28 @@ would look something like this:
     // implemented from scratch.
     struct calculator_context
     {
-        // The values for the _1 and _2 placeholders are
-        // passed to the calculator_context constructor.
-        calculator_context(double d1, double d2)
-          : d1_(d1), d2_(d2)
-        {}
+        // The values with which we'll replace the placeholders
+        std::vector<double> args;
 
         template<
             typename Expr
             // defaulted template parameters, so we can
             // specialize on the expressions that need
             // special handling.
-          , typename Tag = typename tag_of<Expr>::type
-          , typename Arg0 = typename child_c<Expr, 0>::type
+          , typename Tag = typename proto::tag_of<Expr>::type
+          , typename Arg0 = typename proto::child_c<Expr, 0>::type
         >
         struct eval;
 
         // Handle placeholder1 terminals here...
-        template<typename Expr>
-        struct eval<Expr, proto::tag::terminal, placeholder1>
+        template<typename Expr, int I>
+        struct eval<Expr, proto::tag::terminal, placeholder<I> >
         {
             typedef double result_type;
 
             result_type operator()(Expr &, MyContext &ctx) const
             {
-                // replaces _1 with the value in ctx.d1_
-                return ctx.d1_;
-            }
-        };
-
-        // Handle placeholder2 terminals here...
-        template<typename Expr>
-        struct eval<Expr, proto::tag::terminal, placeholder2>
-        {
-            typedef double result_type;
-
-            result_type operator()(Expr &, MyContext &ctx) const
-            {
-                // replaces _1 with the value in ctx.d2_
-                return ctx.d2_;
+                return ctx.args[I];
             }
         };
 
@@ -228,15 +211,16 @@ would look something like this:
         };
 
         // ... other eval<> specializations for other node types ...
-
-        double d1_, d2_;
     };
 
 Now we can use _eval_ with the context class above to evaluate calculator
 expressions as follows:
 
     // Evaluate an expression with a calculator_context
-    double d = proto::eval(_1 + _2, calculator_context(5, 6));
+    calculator_context ctx;
+    ctx.args.push_back(5);
+    ctx.args.push_back(6);
+    double d = proto::eval(_1 + _2, ctx);
     assert(11 == d);
 
 Defining a context from scratch this way is tedious and verbose, but it gives
@@ -516,26 +500,17 @@ _default_context_. We did that as follows:
     struct calculator_context
       : proto::callable_context< calculator_context const >
     {
-        calculator_context(double d1, double d2)
-          : d1_(d1), d2_(d2)
-        {}
+        std::vector<double> args;
 
         // Define the result type of the calculator.
         typedef double result_type;
 
         // Handle the placeholders:
-        double operator()(proto::tag::terminal, placeholder1) const
+        template<int I>
+        double operator()(proto::tag::terminal, placeholder<I>) const
         {
-            return this->d1_;
+            return this->args[I];
         }
-
-        double operator()(proto::tag::terminal, placeholder2) const
-        {
-            return this->d2_;
-        }
-
-    private:
-        double d1_, d2_;
     };
 
 In this case, we didn't specify a fall-back context. In that case,
@@ -544,16 +519,19 @@ _callable_context_ uses the _default_context_. With the above
 terminals, we can evaluate calculator expressions, as demonstrated
 below:
 
-    struct placeholder1 {};
-    struct placeholder2 {};
-    terminal<placeholder1>::type const _1 = {{}};
-    terminal<placeholder2>::type const _2 = {{}};
+    template<int I>
+    struct placeholder
+    {};
+
+    terminal<placeholder<0> >::type const _1 = {{}};
+    terminal<placeholder<1> >::type const _2 = {{}};
     // ...
 
-    double j = proto::eval(
-        (_2 - _1) / _2 * 100
-      , calculator_context(4, 5)
-    );
+    calculator_context ctx;
+    ctx.args.push_back(4);
+    ctx.args.push_back(5);
+
+    double j = proto::eval( (_2 - _1) / _2 * 100, ctx );
     std::cout << "j = " << j << std::endl;
 
 The above code displays the following:

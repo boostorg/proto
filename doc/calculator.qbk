@@ -261,6 +261,9 @@ grammars, `proto::matches<>` and `BOOST_MPL_ASSERT()` it is very easy to give th
 users of your DSEL short and readable compile-time errors when they accidentally 
 misuse your DSEL.
 
+[note `BOOST_MPL_ASSERT()` is part of the Boost Metaprogramming Library. To use it, 
+just `#include <boost/mpl/assert.hpp>`.]
+
 [/=====================================]
 [heading Controlling Operator Overloads]
 [/=====================================]

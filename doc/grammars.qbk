@@ -30,24 +30,24 @@ type matches the grammar.
 
 First, let's define some terminals we can use in our lazy I/O expressions:
 
-    terminal< std::istream & >::type cin_ = { std::cin };
-    terminal< std::ostream & >::type cout_ = { std::cout };
+    proto::terminal< std::istream & >::type cin_ = { std::cin };
+    proto::terminal< std::ostream & >::type cout_ = { std::cout };
 
 Now, we can use `cout_` instead of `std::cout`, and get I/O expression trees
 that we can execute later. To define grammars that match intput and output
 expressions of the form `cin_ >> i` and `cout_ << 1` we do this:
 
     struct Input
-      : shift_right< terminal< std::istream & >, _ >
+      : proto::shift_right< proto::terminal< std::istream & >, proto::_ >
     {};
 
     struct Output
-      : shift_left< terminal< std::ostream & >, _ >
+      : proto::shift_left< proto::terminal< std::ostream & >, proto::_ >
     {};
 
-We've seen the template `terminal<>` before, but here we're using it
+We've seen the template `proto::terminal<>` before, but here we're using it
 without accessing the nested `::type`. When used like this, it is a very simple
-grammar, as are `shift_right<>` and `shift_left<>`. The newcomer
+grammar, as are `proto::shift_right<>` and `proto::shift_left<>`. The newcomer
 here is `_` in the `proto` namespace. It is a wildcard that matches anything.
 The `Input` struct is a grammar that matches any right-shift expression that
 has a `std::istream` terminal as its left operand.
@@ -59,12 +59,12 @@ operation. Consider the following:
     template< typename Expr >
     void input_output( Expr const & expr )
     {
-        if( matches< Expr, Input >::value )
+        if( proto::matches< Expr, Input >::value )
         {
             std::cout << "Input!\n";
         }
 
-        if( matches< Expr, Output >::value )
+        if( proto::matches< Expr, Output >::value )
         {
             std::cout << "Output!\n";
         }
@@ -91,14 +91,14 @@ that handles input expressions and one for output expressions, we can use
 `boost::enable_if<>`, as follows:
 
     template< typename Expr >
-    typename enable_if< matches< Expr, Input > >::type
+    typename boost::enable_if< proto::matches< Expr, Input > >::type
     input_output( Expr const & expr )
     {
         std::cout << "Input!\n";
     }
 
     template< typename Expr >
-    typename enable_if< matches< Expr, Output > >::type
+    typename boost::enable_if< proto::matches< Expr, Output > >::type
     input_output( Expr const & expr )
     {
         std::cout << "Output!\n";
@@ -121,16 +121,16 @@ recursing. We can express this in our grammar using _or_. Here are the correct
 `Input` and `Output` grammars:
 
     struct Input
-      : or_<
-            shift_right< terminal< std::istream & >, _ >
-          , shift_right< Input, _ >
+      : proto::or_<
+            proto::shift_right< proto::terminal< std::istream & >, proto::_ >
+          , proto::shift_right< Input, proto::_ >
         >
     {};
 
     struct Output
-      : or_<
-            shift_left< terminal< std::ostream & >, _ >
-          , shift_left< Output, _ >
+      : proto::or_<
+            proto::shift_left< proto::terminal< std::ostream & >, proto::_ >
+          , proto::shift_left< Output, proto::_ >
         >
     {};
 
@@ -142,16 +142,15 @@ _matches_, the types will be complete. These are recursive grammars, and
 rightly so because they must match a recursive data structure!
 
 When the `Output` grammar is evaluated against an expression like
-`cout_ << 1 << 2`, the first alternate of the _or_ is tried first. It will
-fail, because the expression `cout_ << 1 << 2` does not match the grammar
-`shift_left< terminal< std::ostream & >, _ >`. Then the second
+`cout_ << 1 << 2`, the first alternate of the _or_ is tried first. It will fail,
+because the expression `cout_ << 1 << 2` does not match the grammar
+`proto::shift_left< proto::terminal< std::ostream & >, proto::_ >`. Then the second 
 alternate is tried. We match the expression against
-`shift_left< Output, _ >`. The expression is a left-shift, so we try
-the operands. The right operand `2` matches `_` trivially. To see if
-the left operand `cout_ << 1` matches `Output`, we must recursively evaluate
-the `Output` grammar. This time we succeed, because `cout_ << 1` will match
-the first alternate of the _or_. We're done -- the grammar matches
-successfully.
+`proto::shift_left< Output, proto::_ >`. The expression is a left-shift, so we try
+the operands. The right operand `2` matches `proto::_` trivially. To see if the 
+left operand `cout_ << 1` matches `Output`, we must recursively evaluate the 
+`Output` grammar. This time we succeed, because `cout_ << 1` will match the first 
+alternate of the _or_. We're done -- the grammar matches successfully.
 
 [endsect]
 
@@ -189,8 +188,8 @@ grammar. Otherwise, leave it off and Proto will ignore const and references.
 
 This begs the question: What if you want to match an `int`, but not an `int &`
 or an `int const &`? For forcing exact matches, Proto provides the _exact_
-template. For instance, `proto::terminal<exact<int> >` would only match an `int`
-held by value.
+template. For instance, `proto::terminal< proto::exact<int> >` would only match an 
+`int` held by value.
 
 Proto gives you extra wiggle room when matching array types. Array types match
 themselves or the pointer types they decay to. This is especially useful with
@@ -202,42 +201,42 @@ with the grammar `proto::terminal<char const[6]>`, but the grammar
 code fragment illustrates.
 
     struct CharString
-      : terminal< char const * >
+      : proto::terminal< char const * >
     {};
 
-    typedef terminal< char const[6] >::type char_array;
+    typedef proto::terminal< char const[6] >::type char_array;
 
-    BOOST_MPL_ASSERT(( matches< char_array, CharString > ));
+    BOOST_MPL_ASSERT(( proto::matches< char_array, CharString > ));
 
 What if we only wanted `CharString` to match terminals of exactly the type
 `char const *`? You can use _exact_ here to turn off the fuzzy matching of
 terminals, as follows:
 
     struct CharString
-      : terminal< exact< char const * > >
+      : proto::terminal< proto::exact< char const * > >
     {};
 
-    typedef terminal<char const[6]>::type char_array;
-    typedef terminal<char const *>::type  char_string;
+    typedef proto::terminal<char const[6]>::type char_array;
+    typedef proto::terminal<char const *>::type  char_string;
 
-    BOOST_MPL_ASSERT(( matches< char_string, CharString > ));
-    BOOST_MPL_ASSERT_NOT(( matches< char_array, CharString > ));
+    BOOST_MPL_ASSERT(( proto::matches< char_string, CharString > ));
+    BOOST_MPL_ASSERT_NOT(( proto::matches< char_array, CharString > ));
 
 Now, `CharString` does not match array types, only character string pointers.
 
 The inverse problem is a little trickier: what if you wanted to match all
 character arrays, but not character pointers? As mentioned above, the
 expression `as_expr("hello")` has the type
-`terminal< char const[ 6 ] >::type`. If you wanted to match character
+`proto::terminal< char const[ 6 ] >::type`. If you wanted to match character
 arrays of arbitrary size, you could use `proto::N`, which is an array-size
 wildcard. The following grammar would match any string literal:
-`terminal< char const[ proto::N ] >`.
+`proto::terminal< char const[ proto::N ] >`.
 
 Sometimes you need even more wiggle room when matching terminals. For
 example, maybe you're building a calculator DSEL and you want to allow any
 terminals that are convertible to `double`. For that, Proto provides the
 _convertible_to_ template. You can use it as:
-`proto::terminal<proto::convertible_to<double> >`.
+`proto::terminal< proto::convertible_to< double > >`.
 
 There is one more way you can perform a fuzzy match on terminals. Consider the
 problem of trying to match a `std::complex<>` terminal. You can easily match
@@ -246,7 +245,7 @@ any instantiation of `std::complex<>`? You can use `proto::_` here to solve
 this problem. Here is the grammar to match any `std::complex<>` instantiation:
 
     struct StdComplex
-      : terminal< std::complex< _ > >
+      : proto::terminal< std::complex< proto::_ > >
     {};
 
 When given a grammar like this, Proto will deconstruct the grammar and the
@@ -259,8 +258,8 @@ constituents.
 [section:if_and_not [^if_<>], [^and_<>], and [^not_<>]]
 [/====================================================]
 
-We've already seen how to use expression generators like `terminal<>` and
-`shift_right<>` as grammars. We've also seen _or_, which we can use to
+We've already seen how to use expression generators like `proto::terminal<>` and
+`proto::shift_right<>` as grammars. We've also seen _or_, which we can use to
 express a set of alternate grammars. There are a few others of interest; in
 particular, _if_, _and_ and _not_.
 
@@ -278,16 +277,16 @@ of `CharString` above that uses _exact_. It could have been written without
 _exact_ as follows:
 
     struct CharString
-      : and_<
-            terminal< _ >
-          , if_< is_same< _value, char const * >() >
+      : proto::and_<
+            proto::terminal< proto::_ >
+          , proto::if_< boost::is_same< proto::_value, char const * >() >
         >
     {};
 
-This says that a `CharString` must be a terminal, /and/ its argument must be
+This says that a `CharString` must be a terminal, /and/ its value type must be
 the same as `char const *`. Notice the template argument of _if_:
-`is_same< _value, char const * >()`. This is Proto transform that compares the
-value of a terminal to `char const *`.
+`boost::is_same< proto::_value, char const * >()`. This is Proto transform that 
+compares the value of a terminal to `char const *`.
 
 The _if_ template has a couple of variants. In additon to `if_<Condition>` you
 can also say `if_<Condition, ThenGrammar>` and
@@ -305,7 +304,8 @@ oddball `operator()` -- the function call operator -- which can have any number
 of arguments. Likewise, with Proto you may define your own "operators" that
 could also take more that two arguments. As a result, there may be nodes in
 your Proto expression tree that have an arbitrary number of children (up to
-some predefined maximum). How do you write a grammar to match such a node?
+`BOOST_PROTO_MAX_ARITY`, which is configurable). How do you write a grammar to 
+match such a node?
 
 For such cases, Proto provides the _vararg_ class template. Its template
 argument is a grammar, and the _vararg_ will match the grammar zero or more
@@ -313,7 +313,7 @@ times. Consider a Proto lazy function called `fun()` that can take zero or
 more characters as arguments, as follows:
 
     struct fun_tag {};
-    struct FunTag : terminal< fun_tag > {};
+    struct FunTag : proto::terminal< fun_tag > {};
     FunTag::type const fun = {{}};
 
     // example usage:
@@ -325,7 +325,7 @@ more characters as arguments, as follows:
 Below is the grammar that matches all the allowable invocations of `fun()`:
 
     struct FunCall
-      : function< FunTag, vararg< terminal< char > > >
+      : proto::function< FunTag, proto::vararg< proto::terminal< char > > >
     {};
 
 The `FunCall` grammar uses _vararg_ to match zero or more character literals
@@ -334,16 +334,16 @@ as arguments of the `fun()` function.
 As another example, can you guess what the following grammar matches?
 
     struct Foo
-      : or_<
-            terminal< _ >
-          , nary_expr< _, vararg< Foo > >
+      : proto::or_<
+            proto::terminal< proto::_ >
+          , proto::nary_expr< proto::_, proto::vararg< Foo > >
         >
     {};
 
-Here's a hint: the first template parameter to `nary_expr<>` represents the
-node type, and any additional template parameters represent child nodes. The
-answer is that this is a degenerate grammar that matches every possible
-expression tree, from root to leaves.
+Here's a hint: the first template parameter to `proto::nary_expr<>` represents the
+node type, and any additional template parameters represent child nodes. The answer 
+is that this is a degenerate grammar that matches every possible expression tree, 
+from root to leaves.
 
 [endsect]
 
@@ -351,40 +351,32 @@ expression tree, from root to leaves.
 [section Defining DSEL Grammars]
 [/=============================]
 
-We've already seen how to use small grammars to answer simple questions about
-expression trees. Here's a harder question: ["Does this expression conform to the
-grammar of my domain-specific embedded language?] In this section we'll see how
-to use Proto to define a grammar for your DSEL and use it to validate
-expression templates, giving short, readable compile-time errors for invalid
-expressions.
+In this section we'll see how to use Proto to define a grammar for your DSEL and 
+use it to validate expression templates, giving short, readable compile-time errors 
+for invalid expressions.
 
-[tip You might be thinking that this is a backwards way of doing things.
-["If Proto let me select which operators to overload, my users wouldn't be able
-to create invalid expressions in the first place, and I wouldn't need a grammar
-at all!] That may be true, but there are reasons for preferring to do things
-this way.
+[tip You might think that this is a backwards way of doing things. ["If Proto let 
+me select which operators to overload, my users wouldn't be able to create invalid 
+expressions in the first place, and I wouldn't need a grammar at all!] That may be 
+true, but there are reasons for preferring to do things this way.
 
-First, it lets you develop your DSEL rapidly -- all the operators are
-there for you already! -- and worry about invalid syntax later.
+First, it lets you develop your DSEL rapidly -- all the operators are there for you 
+already! -- and worry about invalid syntax later.
 
-Second, it
-might be the case that some operators are only allowed in certain contexts
-within your DSEL. This is easy to express with a grammar, and hard to do with
-straight operator overloading.
+Second, it might be the case that some operators are only allowed in certain 
+contexts within your DSEL. This is easy to express with a grammar, and hard to do 
+with straight operator overloading.
 
-Third, using a DSEL grammar to flag invalid
-expressions can often yield better errors than manually selecting the
-overloaded operators.
+Third, using a DSEL grammar to flag invalid expressions can often yield better 
+errors than manually selecting the overloaded operators.
 
-Fourth, the grammar can be used for more than just
-validation. As we'll see later, you can use your grammar to define ['tree
-transformations] that convert expression templates into other more useful
-objects.
+Fourth, the grammar can be used for more than just validation. You can use your 
+grammar to define ['tree transformations] that convert expression templates into 
+other more useful objects.
 
-If none of the above convinces you, you actually /can/ use Proto to control
-which operators are overloaded within your domain. And to do it, you need to
-define a grammar! We'll see how later.
-]
+If none of the above convinces you, you actually /can/ use Proto to control which 
+operators are overloaded within your domain. And to do it, you need to define a 
+grammar!]
 
 In a previous section, we used Proto to define a DSEL for a lazily evaluated
 calculator that allowed any combination of placeholders, floating-point
@@ -415,48 +407,47 @@ It's an incomplete type at this point, but we'll still be able to use it to
 define the rules of our grammar. Let's define grammar rules for the terminals:
 
     struct Double
-      : terminal< convertible_to< double > >
+      : proto::terminal< proto::convertible_to< double > >
     {};
 
     struct Placeholder1
-      : terminal< placeholder1 >
+      : proto::terminal< placeholder<0> >
     {};
 
     struct Placeholder2
-      : terminal< placeholder2 >
+      : proto::terminal< placeholder<1> >
     {};
 
     struct Terminal
-      : or_< Double, Placeholder1, Placeholder2 >
+      : proto::or_< Double, Placeholder1, Placeholder2 >
     {};
 
-Now let's define the rules for addition, subtraction, multiplication and
-division. Here, we can ignore issues of associativity and precedence -- the C++
-compiler will enforce that for us. We only must enforce that the arguments to
-the operators must themselves conform to the `CalculatorGrammar` that we
-forward-declared above.
+Now let's define the rules for addition, subtraction, multiplication and division. 
+Here, we can ignore issues of associativity and precedence -- the C++ compiler will 
+enforce that for us. We only must enforce that the arguments to the operators must 
+themselves conform to the `CalculatorGrammar` that we forward-declared above.
 
     struct Plus
-      : plus< CalculatorGrammar, CalculatorGrammar >
+      : proto::plus< CalculatorGrammar, CalculatorGrammar >
     {};
 
     struct Minus
-      : minus< CalculatorGrammar, CalculatorGrammar >
+      : proto::minus< CalculatorGrammar, CalculatorGrammar >
     {};
 
     struct Multiplies
-      : multiplies< CalculatorGrammar, CalculatorGrammar >
+      : proto::multiplies< CalculatorGrammar, CalculatorGrammar >
     {};
 
     struct Divides
-      : divides< CalculatorGrammar, CalculatorGrammar >
+      : proto::divides< CalculatorGrammar, CalculatorGrammar >
     {};
 
 Now that we've defined all the parts of the grammar, we can define
 `CalculatorGrammar`:
 
     struct CalculatorGrammar
-      : or_<
+      : proto::or_<
             Terminal
           , Plus
           , Minus
@@ -472,7 +463,7 @@ to issue readable compile-time errors for invalid expressions, as below:
     template< typename Expr >
     void evaluate( Expr const & expr )
     {
-        BOOST_MPL_ASSERT(( matches< Expr, CalculatorGrammar > ));
+        BOOST_MPL_ASSERT(( proto::matches< Expr, CalculatorGrammar > ));
         // ...
     }
 
