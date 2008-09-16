@@ -14,6 +14,8 @@
 
     #include <boost/proto/detail/prefix.hpp>
     #include <boost/version.hpp>
+    #include <boost/config.hpp>
+    #include <boost/detail/workaround.hpp>
     #include <boost/preprocessor/cat.hpp>
     #include <boost/preprocessor/control/if.hpp>
     #include <boost/preprocessor/control/expr_if.hpp>
@@ -54,6 +56,8 @@
     #include <boost/type_traits/is_same.hpp>
     #include <boost/type_traits/add_const.hpp>
     #include <boost/type_traits/add_reference.hpp>
+    #include <boost/type_traits/remove_cv.hpp>
+    #include <boost/type_traits/remove_const.hpp>
     #include <boost/type_traits/remove_reference.hpp>
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/traits.hpp>
@@ -68,6 +72,7 @@
     # include <boost/spirit/fusion/sequence/value_at.hpp>
     # include <boost/spirit/fusion/sequence/size.hpp>
     #endif
+    #include <boost/proto/detail/poly_function.hpp>
     #include <boost/proto/detail/suffix.hpp>
 
     #ifdef _MSC_VER
@@ -298,7 +303,7 @@
                     )                                                                               \
                 )                                                                                   \
                 BOOST_PP_ENUM_TRAILING_BINARY_PARAMS_Z(Z, N, A, const & BOOST_PP_INTERCEPT)         \
-            >::call(                                                                                \
+            >()(                                                                                    \
                 BOOST_PP_SEQ_ENUM(                                                                  \
                     BOOST_PP_SEQ_FOR_EACH_I(                                                        \
                         BOOST_PROTO_VARARG_AS_EXPR_, ~                                              \
@@ -482,9 +487,9 @@
             struct make_expr_<tag::terminal, Domain, A
                 BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PROTO_MAX_ARITY, void BOOST_PP_INTERCEPT)>
             {
-                typedef typename proto::detail::protoify_<A, Domain>::type type;
+                typedef typename proto::detail::protoify_<A, Domain>::type result_type;
 
-                static type const call(typename add_reference<A>::type a)
+                result_type operator()(typename add_reference<A>::type a) const
                 {
                     return proto::detail::protoify_<A, Domain>::call(a);
                 }
@@ -495,6 +500,73 @@
                 BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PROTO_MAX_ARITY, void BOOST_PP_INTERCEPT)>
               : make_expr_<tag::terminal, default_domain, A>
             {};
+
+            template<typename Base, typename Expr>
+            Expr implicit_expr_wrap(Base const &expr, mpl::false_, Expr *)
+            {
+                return Expr(expr);
+            }
+
+            template<typename Base, typename Expr>
+            Expr implicit_expr_wrap(Base const &expr, mpl::true_, Expr *)
+            {
+                Expr that = {expr};
+                return that;
+            }
+
+            template<typename A0, typename Void = void>
+            struct implicit_expr_1
+            {
+                A0 &a0;
+
+                template<typename Args>
+                operator proto::expr<tag::terminal, Args, 0>() const
+                {
+                    proto::expr<tag::terminal, Args, 0> that = {this->a0};
+                    return that;
+                };
+
+                template<typename Expr>
+                operator Expr() const
+                {
+                    typename Expr::proto_base_expr that = *this;
+                    return detail::implicit_expr_wrap(that, is_aggregate<Expr>(), static_cast<Expr *>(0));
+                }
+            };
+
+            template<typename A0>
+            struct implicit_expr_1<A0, typename A0::proto_is_expr_>
+            {
+                A0 &a0;
+
+            #if BOOST_WORKAROUND(BOOST_INTEL_CXX_VERSION, BOOST_TESTED_AT(1010))
+                typedef typename remove_cv<A0>::type uncv_a0_type;
+
+                operator uncv_a0_type &() const
+                {
+                    return const_cast<uncv_a0_type &>(this->a0);
+                }
+            #else
+                operator A0 &() const
+                {
+                    return this->a0;
+                }
+            #endif
+
+                template<typename Tag, typename Args>
+                operator proto::expr<Tag, Args, 1>() const
+                {
+                    proto::expr<Tag, Args, 1> that = {this->a0};
+                    return that;
+                };
+
+                template<typename Expr>
+                operator Expr() const
+                {
+                    typename Expr::proto_base_expr that = *this;
+                    return detail::implicit_expr_wrap(that, is_aggregate<Expr>(), static_cast<Expr *>(0));
+                }
+            };
 
         #define BOOST_PP_ITERATION_PARAMS_1                                                         \
             (4, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/make_expr.hpp>, 1))                         \
@@ -541,7 +613,7 @@
                         Tag
                       , deduce_domain
                         BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PROTO_MAX_ARITY, A)
-                    >::type
+                    >::result_type
                 type;
             };
 
@@ -589,7 +661,7 @@
                         Tag
                       , Domain
                         BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PROTO_MAX_ARITY, A)
-                    >::type
+                    >::result_type
                 type;
             };
 
@@ -665,6 +737,7 @@
             struct make_expr
             {
                 BOOST_PROTO_CALLABLE()
+                BOOST_PROTO_POLY_FUNCTION()
 
                 template<typename Sig>
                 struct result;
@@ -690,14 +763,14 @@
                     Tag
                   , Domain
                   , A0 const
-                >::type const
+                >::type
                 operator ()(A0 const &a0) const
                 {
                     return proto::detail::make_expr_<
                         Tag
                       , Domain
                       , A0 const
-                    >::call(a0);
+                    >()(a0);
                 }
 
                 // Additional overloads generated by the preprocessor ...
@@ -707,6 +780,23 @@
                 /**/
 
             #include BOOST_PP_ITERATE()
+
+                /// INTERNAL ONLY
+                ///
+                template<
+                    BOOST_PP_ENUM_BINARY_PARAMS(
+                        BOOST_PROTO_MAX_ARITY
+                      , typename A
+                      , = void BOOST_PP_INTERCEPT
+                    )
+                >
+                struct impl
+                  : detail::make_expr_<
+                      Tag
+                    , Domain
+                      BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PROTO_MAX_ARITY, A)
+                    >
+                {};
             };
 
             /// \brief A callable function object equivalent to the
@@ -744,7 +834,7 @@
                 /// \param sequence A Fusion Random Access Sequence
                 /// \return <tt>proto::unpack_expr\<Tag, Domain\>(sequence)</tt>
                 template<typename Sequence>
-                typename result_of::unpack_expr<Tag, Domain, Sequence const>::type const
+                typename result_of::unpack_expr<Tag, Domain, Sequence const>::type
                 operator ()(Sequence const &sequence) const
                 {
                     return proto::detail::unpack_expr_<
@@ -779,7 +869,7 @@
                 };
 
                 template<typename Sequence>
-                typename proto::result_of::unpack_expr<Tag, Domain, Sequence const>::type const
+                typename proto::result_of::unpack_expr<Tag, Domain, Sequence const>::type
                 operator ()(Sequence const &sequence) const
                 {
                     return proto::detail::unpack_expr_<
@@ -801,30 +891,6 @@
             };
 
         } // namespace functional
-
-        /// TODO document me
-        template<typename Tag, typename Domain BOOST_PROTO_WHEN_BUILDING_DOCS(= deduce_domain)>
-        struct _make_expr : callable
-        {
-            template<typename Sig>
-            struct result
-              : functional::make_expr<Tag, Domain>::template result<Sig>
-            {};
-
-            #define M0(Z, N, DATA)                                                                  \
-            template<BOOST_PP_ENUM_PARAMS_Z(Z, N, typename A)>                                      \
-            BOOST_PP_CAT(detail::implicit_expr_, N)<BOOST_PP_ENUM_PARAMS_Z(Z, N, A)>                \
-            operator ()(BOOST_PP_ENUM_BINARY_PARAMS_Z(Z, N, A, &a)) const                           \
-            {                                                                                       \
-                BOOST_PP_CAT(detail::implicit_expr_, N)<BOOST_PP_ENUM_PARAMS_Z(Z, N, A)> that = {   \
-                    BOOST_PP_ENUM_PARAMS_Z(Z, N, a)                                                 \
-                };                                                                                  \
-                return that;                                                                        \
-            }                                                                                       \
-            /**/
-            BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_INC(BOOST_PROTO_MAX_ARITY), M0, ~)
-            #undef M0
-        };
 
         /// \brief Construct an expression of the requested tag type
         /// with a domain and with the specified arguments as children.
@@ -861,7 +927,7 @@
                 Tag
               , deduce_domain
               , A0 const
-            >::call(a0);
+            >()(a0);
         }
 
         /// \overload
@@ -878,7 +944,7 @@
                 Tag
               , Domain
               , B0 const
-            >::call(b0);
+            >()(b0);
         }
 
         // Additional overloads generated by the preprocessor...
@@ -983,13 +1049,6 @@
           : mpl::true_
         {};
 
-        /// INTERNAL ONLY
-        ///
-        template<typename Tag, typename Domain>
-        struct is_callable<_make_expr<Tag, Domain> >
-          : mpl::true_
-        {};
-
     }}
 
     #ifdef _MSC_VER
@@ -1008,6 +1067,7 @@
     #define N BOOST_PP_ITERATION()
     #define M BOOST_PP_SUB(BOOST_PROTO_MAX_ARITY, N)
 
+    #if N > 1
         template<BOOST_PP_ENUM_PARAMS(N, typename A)>
         struct BOOST_PP_CAT(implicit_expr_, N)
         {
@@ -1015,21 +1075,6 @@
             BOOST_PP_REPEAT(N, M0, ~)
             #undef M0
 
-            #if N == 1
-            operator A0 &() const
-            {
-                return this->a0;
-            }
-
-            template<typename Args>
-            operator proto::expr<tag::terminal, Args, 0>() const
-            {
-                proto::expr<tag::terminal, Args, 0> that = {this->a0};
-                return that;
-            };
-            #endif
-
-            #if N > 0
             template<typename Tag, typename Args>
             operator proto::expr<Tag, Args, N>() const
             {
@@ -1043,29 +1088,15 @@
                 proto::expr<Tag, Args, N> that = {BOOST_PP_ENUM_PARAMS(N, c)};
                 return that;
             };
-            #endif
 
             template<typename Expr>
             operator Expr() const
             {
                 typename Expr::proto_base_expr that = *this;
-                return this->wrap(that, is_aggregate<Expr>(), static_cast<Expr *>(0));
-            }
-
-        private:
-            template<typename Base, typename Expr>
-            static Expr wrap(Base const &expr, mpl::false_, Expr *)
-            {
-                return Expr(expr);
-            }
-
-            template<typename Base, typename Expr>
-            static Expr wrap(Base const &expr, mpl::true_, Expr *)
-            {
-                Expr that = {expr};
-                return that;
+                return detail::implicit_expr_wrap(that, is_aggregate<Expr>(), static_cast<Expr *>(0));
             }
         };
+    #endif
 
         template<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_ARITY, typename T)>
         struct select_nth<BOOST_PP_DEC(N), BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_ARITY, T)>
@@ -1130,9 +1161,9 @@
               , BOOST_PP_CAT(list, N)<BOOST_PP_ENUM(N, BOOST_PROTO_AS_CHILD_TYPE, (A, ~, Domain)) >
             > expr_type;
 
-            typedef typename Domain::template result<void(expr_type)>::type type;
+            typedef typename Domain::template result<void(expr_type)>::type result_type;
 
-            static type const call(BOOST_PP_ENUM_BINARY_PARAMS(N, typename add_reference<A, >::type a))
+            result_type operator()(BOOST_PP_ENUM_BINARY_PARAMS(N, typename add_reference<A, >::type a)) const
             {
                 expr_type that = {
                     BOOST_PP_ENUM(N, BOOST_PROTO_AS_CHILD, (A, a, Domain))
@@ -1210,14 +1241,14 @@
             Tag
           , Domain
             BOOST_PP_ENUM_TRAILING_PARAMS(N, const A)
-        >::type const
+        >::type
         operator ()(BOOST_PP_ENUM_BINARY_PARAMS(N, const A, &a)) const
         {
             return proto::detail::make_expr_<
                 Tag
               , Domain
                 BOOST_PP_ENUM_TRAILING_PARAMS(N, const A)
-            >::call(BOOST_PP_ENUM_PARAMS(N, a));
+            >()(BOOST_PP_ENUM_PARAMS(N, a));
         }
 
     #undef N
@@ -1242,7 +1273,7 @@
                 Tag
               , deduce_domain
                 BOOST_PP_ENUM_TRAILING_PARAMS(N, const A)
-            >::call(BOOST_PP_ENUM_PARAMS(N, a));
+            >()(BOOST_PP_ENUM_PARAMS(N, a));
         }
 
         /// \overload
@@ -1259,7 +1290,7 @@
                 Tag
               , Domain
                 BOOST_PP_ENUM_TRAILING_PARAMS(N, const B)
-            >::call(BOOST_PP_ENUM_PARAMS(N, b));
+            >()(BOOST_PP_ENUM_PARAMS(N, b));
         }
 
     #undef N
