@@ -89,17 +89,7 @@ namespace boost { namespace proto
         {};
 
         template<typename T, typename Domain>
-        struct protoify<boost::reference_wrapper<T> &, Domain>
-          : Domain::template as_child<T>
-        {};
-
-        template<typename T, typename Domain>
         struct protoify<boost::reference_wrapper<T> const, Domain>
-          : Domain::template as_child<T>
-        {};
-
-        template<typename T, typename Domain>
-        struct protoify<boost::reference_wrapper<T> const &, Domain>
           : Domain::template as_child<T>
         {};
 
