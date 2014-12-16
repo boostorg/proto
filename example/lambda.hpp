@@ -257,7 +257,7 @@
 
             #define M0(Z, N, DATA)                                                                  \
                 case proto::tag_of<typename proto::result_of::child_c<Expr, N>::type>::type::value: \
-                    eval_lambda(proto::child_c<N>(expr), state, data);                                   \
+                    eval_lambda(proto::child_c<N>(expr), state, data);                              \
                     break;                                                                          \
                     /**/
 
@@ -274,7 +274,7 @@
                   , typename impl2::data_param data                                                 \
                 ) const                                                                             \
                 {                                                                                   \
-                    switch(eval_lambda(proto::child_c<0>(expr), state, data))                            \
+                    switch(eval_lambda(proto::child_c<0>(expr), state, data))                       \
                     {                                                                               \
                         BOOST_PP_REPEAT_FROM_TO_ ## Z(1, N, M0, ~)                                  \
                     default:                                                                        \
@@ -295,11 +295,11 @@
                   , typename impl2::data_param data                                                 \
                 ) const                                                                             \
                 {                                                                                   \
-                    switch(eval_lambda(proto::child_c<0>(expr), state, data))                            \
+                    switch(eval_lambda(proto::child_c<0>(expr), state, data))                       \
                     {                                                                               \
                         BOOST_PP_REPEAT_FROM_TO_ ## Z(1, BOOST_PP_DEC(N), M0, ~)                    \
                     default:;                                                                       \
-                        eval_lambda(proto::child_c<BOOST_PP_DEC(N)>(expr), state, data);                 \
+                        eval_lambda(proto::child_c<BOOST_PP_DEC(N)>(expr), state, data);            \
                         break;                                                                      \
                     }                                                                               \
                 }                                                                                   \
@@ -475,13 +475,8 @@
         template<> struct AssignOps::case_<proto::tag::bitwise_or_assign>   : proto::not_<proto::_> {};
         template<> struct AssignOps::case_<proto::tag::bitwise_xor_assign>  : proto::not_<proto::_> {};
 
-        namespace exprns_
-        {
-            template<typename Expr>
-            struct llexpr;
-        }
-
-        using exprns_::llexpr;
+        template<typename Expr>
+        struct llexpr;
 
         // Wrap expressions in lambda::llexpr<>.
         struct Generator
@@ -565,7 +560,7 @@
                     BOOST_MPL_ASSERT_RELATION(result_of<Arity(Expr const &)>::type::value, <=, SIZE);       \
                     BOOST_PP_CAT(fusion::vector, SIZE)<BOOST_PP_SEQ_FOR_EACH_I_R(R, M5, ~, PRODUCT)> args   \
                         (BOOST_PP_SEQ_FOR_EACH_I_R(R, M6, ~, PRODUCT));                                     \
-                    return eval_lambda(*this, no_exception, args);                                               \
+                    return eval_lambda(*this, no_exception, args);                                          \
                 }                                                                                           \
                 /**/
 
