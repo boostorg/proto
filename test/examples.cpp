@@ -127,8 +127,8 @@ struct binary_arity
 };
 //]
 
-proto::terminal< placeholder<0> >::type const _1 = {{}};
-proto::terminal< placeholder<1> >::type const _2 = {{}};
+proto::terminal< placeholder<0> >::type const _1 = {};
+proto::terminal< placeholder<1> >::type const _2 = {};
 
 //[ CalculatorArityGrammar
 struct CalculatorArity
@@ -355,11 +355,7 @@ namespace lambda_transform
 {
     //[LambdaTransform
     template<typename N>
-    struct placeholder
-    {
-        typedef typename N::type type;
-        static typename N::value_type const value = N::value;
-    };
+    struct placeholder : N {};
 
     // A function object that calls fusion::at()
     struct at : proto::callable
@@ -401,8 +397,8 @@ namespace lambda_transform
     {};
 
     // Define the lambda placeholders
-    proto::terminal<placeholder<mpl::int_<0> > >::type const _1 = {{}};
-    proto::terminal<placeholder<mpl::int_<1> > >::type const _2 = {{}};
+    proto::terminal<placeholder<mpl::int_<0> > >::type const _1 = {};
+    proto::terminal<placeholder<mpl::int_<1> > >::type const _2 = {};
 
     void test_lambda()
     {
