@@ -11,7 +11,6 @@
 
 #include <iostream>
 #include <boost/preprocessor/stringize.hpp>
-#include <boost/bind.hpp>
 #include <boost/ref.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/proto/proto_fwd.hpp>
@@ -115,6 +114,9 @@ namespace boost { namespace proto
 
     namespace detail
     {
+        // copyable functor to pass by value to fusion::foreach
+        struct display_expr_impl_functor;
+
         struct display_expr_impl
         {
             explicit display_expr_impl(std::ostream &sout, int depth = 0)
@@ -153,7 +155,7 @@ namespace boost { namespace proto
                 this->sout_ << (this->first_? "" : ", ");
                 this->sout_ << tag() << "(\n";
                 display_expr_impl display(this->sout_, this->depth_ + 4);
-                fusion::for_each(expr, boost::bind<void>(boost::ref(display), _1));
+                fusion::for_each(expr, display_expr_impl_functor(display));
                 this->sout_.width(this->depth_);
                 this->sout_ << "" << ")\n";
                 this->first_ = false;
@@ -162,6 +164,21 @@ namespace boost { namespace proto
             int depth_;
             mutable bool first_;
             std::ostream &sout_;
+        };
+
+        struct display_expr_impl_functor
+        {
+            display_expr_impl_functor(display_expr_impl const& impl): impl_(impl)
+            {}
+
+            template<typename Expr>
+            void operator()(Expr const &expr) const
+            {
+                this->impl_(expr);
+            }
+
+        private:
+            display_expr_impl const& impl_;
         };
     }
 
