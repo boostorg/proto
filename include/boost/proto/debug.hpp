@@ -115,7 +115,21 @@ namespace boost { namespace proto
     namespace detail
     {
         // copyable functor to pass by value to fusion::foreach
-        struct display_expr_impl_functor;
+        struct display_expr_impl;
+        struct display_expr_impl_functor
+        {
+            display_expr_impl_functor(display_expr_impl const& impl): impl_(impl)
+            {}
+
+            template<typename Expr>
+            void operator()(Expr const &expr) const
+            {
+                this->impl_(expr);
+            }
+
+        private:
+            display_expr_impl const& impl_;
+        };
 
         struct display_expr_impl
         {
@@ -164,21 +178,6 @@ namespace boost { namespace proto
             int depth_;
             mutable bool first_;
             std::ostream &sout_;
-        };
-
-        struct display_expr_impl_functor
-        {
-            display_expr_impl_functor(display_expr_impl const& impl): impl_(impl)
-            {}
-
-            template<typename Expr>
-            void operator()(Expr const &expr) const
-            {
-                this->impl_(expr);
-            }
-
-        private:
-            display_expr_impl const& impl_;
         };
     }
 
