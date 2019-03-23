@@ -138,6 +138,25 @@
         BOOST_PP_REPEAT(ARG_COUNT, BOOST_PROTO_CHILD, ~)
         BOOST_PP_REPEAT_FROM_TO(ARG_COUNT, BOOST_PROTO_MAX_ARITY, BOOST_PROTO_VOID, ~)
 
+        #define BOOST_PROTO_HASH #
+
+        #if defined(__WAVE__)
+        BOOST_PROTO_HASH ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+        #endif
+        #if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) || defined(__WAVE__)
+            /// Define default constructor and copy constructor as explicitly defaulted
+            /// if the compiler supports it. This allows to silence gcc's deprecated-copy
+            /// warnings.
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        #endif
+        #if defined(__WAVE__)
+        BOOST_PROTO_HASH endif
+        #endif
+
+        #undef BOOST_PROTO_HASH
+
         /// \return *this
         ///
         BOOST_FORCEINLINE

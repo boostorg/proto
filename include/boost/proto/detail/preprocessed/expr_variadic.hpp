@@ -49,6 +49,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0;
         typedef void proto_child1; typedef void proto_child2; typedef void proto_child3; typedef void proto_child4; typedef void proto_child5; typedef void proto_child6; typedef void proto_child7; typedef void proto_child8; typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -335,6 +343,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0;
         typedef void proto_child1; typedef void proto_child2; typedef void proto_child3; typedef void proto_child4; typedef void proto_child5; typedef void proto_child6; typedef void proto_child7; typedef void proto_child8; typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -538,6 +554,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0; typedef Arg1 proto_child1; proto_child1 child1;
         typedef void proto_child2; typedef void proto_child3; typedef void proto_child4; typedef void proto_child5; typedef void proto_child6; typedef void proto_child7; typedef void proto_child8; typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -728,6 +752,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0; typedef Arg1 proto_child1; proto_child1 child1; typedef Arg2 proto_child2; proto_child2 child2;
         typedef void proto_child3; typedef void proto_child4; typedef void proto_child5; typedef void proto_child6; typedef void proto_child7; typedef void proto_child8; typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -918,6 +950,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0; typedef Arg1 proto_child1; proto_child1 child1; typedef Arg2 proto_child2; proto_child2 child2; typedef Arg3 proto_child3; proto_child3 child3;
         typedef void proto_child4; typedef void proto_child5; typedef void proto_child6; typedef void proto_child7; typedef void proto_child8; typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -1108,6 +1148,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0; typedef Arg1 proto_child1; proto_child1 child1; typedef Arg2 proto_child2; proto_child2 child2; typedef Arg3 proto_child3; proto_child3 child3; typedef Arg4 proto_child4; proto_child4 child4;
         typedef void proto_child5; typedef void proto_child6; typedef void proto_child7; typedef void proto_child8; typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -1298,6 +1346,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0; typedef Arg1 proto_child1; proto_child1 child1; typedef Arg2 proto_child2; proto_child2 child2; typedef Arg3 proto_child3; proto_child3 child3; typedef Arg4 proto_child4; proto_child4 child4; typedef Arg5 proto_child5; proto_child5 child5;
         typedef void proto_child6; typedef void proto_child7; typedef void proto_child8; typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -1488,6 +1544,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0; typedef Arg1 proto_child1; proto_child1 child1; typedef Arg2 proto_child2; proto_child2 child2; typedef Arg3 proto_child3; proto_child3 child3; typedef Arg4 proto_child4; proto_child4 child4; typedef Arg5 proto_child5; proto_child5 child5; typedef Arg6 proto_child6; proto_child6 child6;
         typedef void proto_child7; typedef void proto_child8; typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -1678,6 +1742,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0; typedef Arg1 proto_child1; proto_child1 child1; typedef Arg2 proto_child2; proto_child2 child2; typedef Arg3 proto_child3; proto_child3 child3; typedef Arg4 proto_child4; proto_child4 child4; typedef Arg5 proto_child5; proto_child5 child5; typedef Arg6 proto_child6; proto_child6 child6; typedef Arg7 proto_child7; proto_child7 child7;
         typedef void proto_child8; typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -1868,6 +1940,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0; typedef Arg1 proto_child1; proto_child1 child1; typedef Arg2 proto_child2; proto_child2 child2; typedef Arg3 proto_child3; proto_child3 child3; typedef Arg4 proto_child4; proto_child4 child4; typedef Arg5 proto_child5; proto_child5 child5; typedef Arg6 proto_child6; proto_child6 child6; typedef Arg7 proto_child7; proto_child7 child7; typedef Arg8 proto_child8; proto_child8 child8;
         typedef void proto_child9;
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
@@ -2058,6 +2138,14 @@
         typedef void proto_is_expr_; 
         typedef Arg0 proto_child0; proto_child0 child0; typedef Arg1 proto_child1; proto_child1 child1; typedef Arg2 proto_child2; proto_child2 child2; typedef Arg3 proto_child3; proto_child3 child3; typedef Arg4 proto_child4; proto_child4 child4; typedef Arg5 proto_child5; proto_child5 child5; typedef Arg6 proto_child6; proto_child6 child6; typedef Arg7 proto_child7; proto_child7 child7; typedef Arg8 proto_child8; proto_child8 child8; typedef Arg9 proto_child9; proto_child9 child9;
         
+        # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+            
+            
+            
+            BOOST_FORCEINLINE expr() = default;
+            BOOST_FORCEINLINE expr(const expr&) = default;
+            BOOST_FORCEINLINE expr(expr&&) = default;
+        # endif
         
         
         BOOST_FORCEINLINE
