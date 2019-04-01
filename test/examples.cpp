@@ -178,20 +178,18 @@ struct CalcArity
 struct ArgsAsList
   : proto::when<
         proto::function<proto::terminal<_>, proto::vararg<proto::terminal<_> > >
-      /*<< Use a `reverse_fold<>` transform to iterate over the children
-      of this node in reverse order, building a fusion list from back to
-      front. >>*/
-      , proto::reverse_fold<
+      /*<< Use a `fold<>` transform to iterate over the children of this
+      node in forward order, building a fusion list from front to back. >>*/
+      , proto::fold<
             /*<< The first child expression of a `function<>` node is the
             function being invoked. We don't want that in our list, so use
             `pop_front()` to remove it. >>*/
             proto::_pop_front(_)
-          /*<< `nil` is the initial state used by the `reverse_fold<>`
-          transform. >>*/
+          /*<< `nil` is the initial state used by the `fold<>` transform. >>*/
           , fusion::nil()
           /*<< Put the rest of the function arguments in a fusion cons
           list. >>*/
-          , fusion::cons<proto::_value, proto::_state>(proto::_value, proto::_state)
+          , proto::functional::push_back(proto::_state, proto::_value)
         >
     >
 {};
