@@ -11,14 +11,14 @@
 
 #include <iostream>
 #include <boost/preprocessor/stringize.hpp>
-#include <boost/ref.hpp>
+#include <boost/core/ref.hpp>
+#include <boost/core/typeinfo.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/proto/proto_fwd.hpp>
 #include <boost/proto/traits.hpp>
 #include <boost/proto/matches.hpp>
 #include <boost/proto/fusion.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
-#include <boost/detail/sp_typeinfo.hpp>
 
 namespace boost { namespace proto
 {
@@ -100,7 +100,7 @@ namespace boost { namespace proto
         {
             template<typename T>
             named_any(T const &)
-              : name_(BOOST_SP_TYPEID(T).name())
+              : name_(BOOST_CORE_TYPEID(T).name())
             {}
 
             char const *name_;
