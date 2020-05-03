@@ -524,11 +524,6 @@ namespace boost { namespace proto
             {}
 
             BOOST_FORCEINLINE
-            extends(extends const &that)
-              : proto_expr_(that.proto_expr_)
-            {}
-
-            BOOST_FORCEINLINE
             extends(Expr const &expr_)
               : proto_expr_(expr_)
             {}
@@ -552,11 +547,6 @@ namespace boost { namespace proto
             BOOST_FORCEINLINE
             extends()
               : proto_expr_()
-            {}
-
-            BOOST_FORCEINLINE
-            extends(extends const &that)
-              : proto_expr_(that.proto_expr_)
             {}
 
             BOOST_FORCEINLINE
