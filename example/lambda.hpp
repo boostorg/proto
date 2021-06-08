@@ -658,46 +658,43 @@
             }
         };
 
-        namespace exprns_
-        {
-            // Ugh, the assign operators (and only the assign operators) store
-            // their left terminals by reference. That requires this special handling.
-            #define BOOST_LAMBDA_DEFINE_ASSIGN_OP(OP, TAG)                                          \
-            template<typename T, typename U>                                                        \
-            typename proto::result_of::make_expr<                                                   \
-                TAG                                                                                 \
-              , lldomain                                                                            \
-              , typename boost::result_of<byref(T &)>::type                                         \
-              , U &                                                                                 \
-            >::type const                                                                           \
-            operator OP(T &t, U &u)                                                                 \
-            {                                                                                       \
-                return proto::make_expr<TAG, lldomain>(byref()(t), boost::ref(u));                  \
-            }                                                                                       \
-            template<typename T, typename U>                                                        \
-            typename proto::result_of::make_expr<                                                   \
-                TAG                                                                                 \
-              , lldomain                                                                            \
-              , typename boost::result_of<byref(T &)>::type                                         \
-              , U const &                                                                           \
-            >::type const                                                                           \
-            operator OP(T &t, U const &u)                                                           \
-            {                                                                                       \
-                return proto::make_expr<TAG, lldomain>(byref()(t), boost::ref(u));                  \
-            }                                                                                       \
-            /**/
+        // Ugh, the assign operators (and only the assign operators) store
+        // their left terminals by reference. That requires this special handling.
+        #define BOOST_LAMBDA_DEFINE_ASSIGN_OP(OP, TAG)                                          \
+        template<typename T, typename U>                                                        \
+        typename proto::result_of::make_expr<                                                   \
+            TAG                                                                                 \
+          , lldomain                                                                            \
+          , typename boost::result_of<byref(T &)>::type                                         \
+          , U &                                                                                 \
+        >::type const                                                                           \
+        operator OP(T &t, U &u)                                                                 \
+        {                                                                                       \
+            return proto::make_expr<TAG, lldomain>(byref()(t), boost::ref(u));                  \
+        }                                                                                       \
+        template<typename T, typename U>                                                        \
+        typename proto::result_of::make_expr<                                                   \
+            TAG                                                                                 \
+          , lldomain                                                                            \
+          , typename boost::result_of<byref(T &)>::type                                         \
+          , U const &                                                                           \
+        >::type const                                                                           \
+        operator OP(T &t, U const &u)                                                           \
+        {                                                                                       \
+            return proto::make_expr<TAG, lldomain>(byref()(t), boost::ref(u));                  \
+        }                                                                                       \
+        /**/
 
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(<<=, boost::proto::tag::shift_left_assign)
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(>>=, boost::proto::tag::shift_right_assign)
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(*= , boost::proto::tag::multiplies_assign)
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(/= , boost::proto::tag::divides_assign)
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(%= , boost::proto::tag::modulus_assign)
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(+= , boost::proto::tag::plus_assign)
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(-= , boost::proto::tag::minus_assign)
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(&= , boost::proto::tag::bitwise_and_assign)
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(|= , boost::proto::tag::bitwise_or_assign)
-            BOOST_LAMBDA_DEFINE_ASSIGN_OP(^= , boost::proto::tag::bitwise_xor_assign)
-        }
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(<<=, boost::proto::tag::shift_left_assign)
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(>>=, boost::proto::tag::shift_right_assign)
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(*= , boost::proto::tag::multiplies_assign)
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(/= , boost::proto::tag::divides_assign)
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(%= , boost::proto::tag::modulus_assign)
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(+= , boost::proto::tag::plus_assign)
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(-= , boost::proto::tag::minus_assign)
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(&= , boost::proto::tag::bitwise_and_assign)
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(|= , boost::proto::tag::bitwise_or_assign)
+        BOOST_LAMBDA_DEFINE_ASSIGN_OP(^= , boost::proto::tag::bitwise_xor_assign)
 
         template<typename T>
         struct var_type
