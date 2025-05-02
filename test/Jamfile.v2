@@ -7,6 +7,7 @@ import testing ;
 
 project
     : requirements
+        <library>/boost/proto//boost_proto
         <toolset>intel:<debug-symbols>off
         <toolset>msvc-7.1:<debug-symbols>off
         <toolset>msvc-8.0:<define>_SCL_SECURE_NO_DEPRECATE
