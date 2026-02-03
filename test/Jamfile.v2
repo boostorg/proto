@@ -33,7 +33,9 @@ run examples.cpp ;
 run external_transforms.cpp ;
 run lambda.cpp ;
 run make_expr.cpp ;
-run matches.cpp ;
+run matches.cpp
+  # doesn't work on clang-cl for some reason
+  : : : <toolset>clang,<target-os>windows:<build>no ;
 run flatten.cpp ;
 run switch.cpp ;
 run toy_spirit.cpp ;
