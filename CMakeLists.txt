@@ -20,7 +20,6 @@ target_link_libraries(boost_proto
     Boost::mpl
     Boost::preprocessor
     Boost::range
-    Boost::static_assert
     Boost::type_traits
     Boost::typeof
     Boost::utility
