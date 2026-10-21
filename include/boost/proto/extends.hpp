@@ -473,7 +473,6 @@ namespace boost { namespace proto
         /**/
 
     #define BOOST_PROTO_EXTENDS_USING_ASSIGN_NON_DEPENDENT(Derived)                                 \
-        typedef Derived::proto_extends proto_extends;                                               \
         using proto_extends::operator =;                                                            \
         BOOST_PROTO_EXTENDS_COPY_ASSIGN_(Derived, BOOST_PP_EMPTY)                                   \
         /**/
